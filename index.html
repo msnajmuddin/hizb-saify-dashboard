@@ -8,33 +8,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
-:root{
-  --ink:#1a2542;--ink-soft:#34405e;--ink-mute:#6b7290;
-  --paper:#f5f1e8;--paper-2:#ece6d6;--paper-3:#e2dac5;
-  --rule:#d8cfb5;--rule-soft:#e6dfca;
-  --maroon:#7a1f2b;--maroon-soft:#a4434f;--gold:#a98637;
-  --green:#4a6b3f;--red:#9b3a2a;
-  --serif:"Cormorant Garamond","Iowan Old Style","Palatino","Georgia",serif;
-  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-  --mono:"JetBrains Mono","SF Mono",ui-monospace,monospace;
-}
+:root{--ink:#1a2542;--ink-soft:#34405e;--ink-mute:#6b7290;--paper:#f5f1e8;--paper-2:#ece6d6;--paper-3:#e2dac5;--rule:#d8cfb5;--rule-soft:#e6dfca;--maroon:#7a1f2b;--maroon-soft:#a4434f;--gold:#a98637;--green:#4a6b3f;--red:#9b3a2a;--serif:"Cormorant Garamond","Iowan Old Style","Palatino","Georgia",serif;--sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono","SF Mono",ui-monospace,monospace}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 body{background-image:radial-gradient(circle at 20% 0%,rgba(122,31,43,.04) 0%,transparent 40%),radial-gradient(circle at 80% 100%,rgba(26,37,66,.05) 0%,transparent 50%);min-height:100vh}
-a{color:inherit}
-::selection{background:rgba(122,31,43,.2)}
+a{color:inherit}::selection{background:rgba(122,31,43,.2)}
 [dir="rtl"]{font-family:"Amiri","Noto Naskh Arabic","Times New Roman",serif;line-height:1.45}
-::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(26,37,66,.18);border-radius:5px}
-::-webkit-scrollbar-thumb:hover{background:rgba(26,37,66,.32)}
-#root:empty::after{content:"Loading…";display:block;text-align:center;padding:200px 20px;font-family:var(--serif);font-style:italic;font-size:22px;color:var(--ink-mute)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(26,37,66,.18);border-radius:5px}
+body.no-arabic [dir="rtl"]{display:none!important}
 </style>
 </head>
 <body style="background-color:#f5ead0">
 <div id="root"></div>
-
-<!-- Data -->
 <script>window.HIZB_DATA = {
   "generated": "2026-05-15T20:50:04.530Z",
   "mauze": [
@@ -2898,17 +2883,9 @@ window.toArNum = function(n) {
   return s.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 };
 </script>
-
-<!-- React 18 via cdnjs (reliable global CDN) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
-<!-- Babel standalone to compile JSX in browser -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.10/babel.min.js"></script>
-
-<!-- Components (JSX, compiled in browser) -->
-<script type="text/babel" data-presets="react">
-
-// tweaks-panel.jsx
+<script>// tweaks-panel.jsx
 // Reusable Tweaks shell + form-control helpers.
 //
 // Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
@@ -3074,13 +3051,22 @@ function useTweaks(defaults) {
   // useState-style call doesn't write a "[object Object]" key into the persisted
   // JSON block.
   const setTweak = React.useCallback((keyOrEdits, val) => {
-    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
-      ? keyOrEdits : { [keyOrEdits]: val };
-    setValues((prev) => ({ ...prev, ...edits }));
-    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null ? keyOrEdits : {
+      [keyOrEdits]: val
+    };
+    setValues(prev => ({
+      ...prev,
+      ...edits
+    }));
+    window.parent.postMessage({
+      type: '__edit_mode_set_keys',
+      edits
+    }, '*');
     // Same-window signal so in-page listeners (deck-stage rail thumbnails)
     // can react — the parent message only reaches the host, not peers.
-    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+    window.dispatchEvent(new CustomEvent('tweakchange', {
+      detail: edits
+    }));
   }, []);
   return [values, setTweak];
 }
@@ -3092,7 +3078,11 @@ function useTweaks(defaults) {
 // The close button posts __edit_mode_dismissed so the host's toolbar toggle
 // flips off in lockstep; the host echoes __deactivate_edit_mode back which
 // is what actually hides the panel.
-function TweaksPanel({ title = 'Tweaks', noDeckControls = false, children }) {
+function TweaksPanel({
+  title = 'Tweaks',
+  noDeckControls = false,
+  children
+}) {
   const [open, setOpen] = React.useState(false);
   const dragRef = React.useRef(null);
   // Auto-inject a rail toggle when a <deck-stage> is on the page. The
@@ -3101,50 +3091,54 @@ function TweaksPanel({ title = 'Tweaks', noDeckControls = false, children }) {
   // the control reflects reality across reloads. The mechanism is the
   // message — authors who want custom placement can post it directly
   // and pass noDeckControls to suppress this one.
-  const hasDeckStage = React.useMemo(
-    () => typeof document !== 'undefined' && !!document.querySelector('deck-stage'),
-    [],
-  );
+  const hasDeckStage = React.useMemo(() => typeof document !== 'undefined' && !!document.querySelector('deck-stage'), []);
   // deck-stage enables its rail in connectedCallback, but this panel can
   // mount before that element has upgraded. The initial read catches the
   // common case; the listener covers mounting first. (Older deck-stage.js
   // copies still wait for the host's __omelette_rail_enabled postMessage —
   // same listener handles those.)
-  const [railEnabled, setRailEnabled] = React.useState(
-    () => hasDeckStage && !!document.querySelector('deck-stage')?._railEnabled,
-  );
+  const [railEnabled, setRailEnabled] = React.useState(() => hasDeckStage && !!document.querySelector('deck-stage')?._railEnabled);
   React.useEffect(() => {
     if (!hasDeckStage || railEnabled) return undefined;
-    const onMsg = (e) => {
+    const onMsg = e => {
       if (e.data && e.data.type === '__omelette_rail_enabled') setRailEnabled(true);
     };
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);
   }, [hasDeckStage, railEnabled]);
   const [railVisible, setRailVisible] = React.useState(() => {
-    try { return localStorage.getItem('deck-stage.railVisible') !== '0'; } catch (e) { return true; }
+    try {
+      return localStorage.getItem('deck-stage.railVisible') !== '0';
+    } catch (e) {
+      return true;
+    }
   });
-  const toggleRail = (on) => {
+  const toggleRail = on => {
     setRailVisible(on);
-    window.postMessage({ type: '__deck_rail_visible', on }, '*');
+    window.postMessage({
+      type: '__deck_rail_visible',
+      on
+    }, '*');
   };
-  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const offsetRef = React.useRef({
+    x: 16,
+    y: 16
+  });
   const PAD = 16;
-
   const clampToViewport = React.useCallback(() => {
     const panel = dragRef.current;
     if (!panel) return;
-    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const w = panel.offsetWidth,
+      h = panel.offsetHeight;
     const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
     const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
     offsetRef.current = {
       x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
-      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y))
     };
     panel.style.right = offsetRef.current.x + 'px';
     panel.style.bottom = offsetRef.current.y + 'px';
   }, []);
-
   React.useEffect(() => {
     if (!open) return;
     clampToViewport();
@@ -3156,34 +3150,35 @@ function TweaksPanel({ title = 'Tweaks', noDeckControls = false, children }) {
     ro.observe(document.documentElement);
     return () => ro.disconnect();
   }, [open, clampToViewport]);
-
   React.useEffect(() => {
-    const onMsg = (e) => {
+    const onMsg = e => {
       const t = e?.data?.type;
-      if (t === '__activate_edit_mode') setOpen(true);
-      else if (t === '__deactivate_edit_mode') setOpen(false);
+      if (t === '__activate_edit_mode') setOpen(true);else if (t === '__deactivate_edit_mode') setOpen(false);
     };
     window.addEventListener('message', onMsg);
-    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    window.parent.postMessage({
+      type: '__edit_mode_available'
+    }, '*');
     return () => window.removeEventListener('message', onMsg);
   }, []);
-
   const dismiss = () => {
     setOpen(false);
-    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+    window.parent.postMessage({
+      type: '__edit_mode_dismissed'
+    }, '*');
   };
-
-  const onDragStart = (e) => {
+  const onDragStart = e => {
     const panel = dragRef.current;
     if (!panel) return;
     const r = panel.getBoundingClientRect();
-    const sx = e.clientX, sy = e.clientY;
+    const sx = e.clientX,
+      sy = e.clientY;
     const startRight = window.innerWidth - r.right;
     const startBottom = window.innerHeight - r.bottom;
-    const move = (ev) => {
+    const move = ev => {
       offsetRef.current = {
         x: startRight - (ev.clientX - sx),
-        y: startBottom - (ev.clientY - sy),
+        y: startBottom - (ev.clientY - sy)
       };
       clampToViewport();
     };
@@ -3194,78 +3189,107 @@ function TweaksPanel({ title = 'Tweaks', noDeckControls = false, children }) {
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
   };
-
   if (!open) return null;
-  return (
-    <>
-      <style>{__TWEAKS_STYLE}</style>
-      <div ref={dragRef} className="twk-panel" data-noncommentable=""
-           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
-        <div className="twk-hd" onMouseDown={onDragStart}>
-          <b>{title}</b>
-          <button className="twk-x" aria-label="Close tweaks"
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={dismiss}>✕</button>
-        </div>
-        <div className="twk-body">
-          {children}
-          {hasDeckStage && railEnabled && !noDeckControls && (
-            <TweakSection label="Deck">
-              <TweakToggle label="Thumbnail rail" value={railVisible} onChange={toggleRail} />
-            </TweakSection>
-          )}
-        </div>
-      </div>
-    </>
-  );
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, __TWEAKS_STYLE), /*#__PURE__*/React.createElement("div", {
+    ref: dragRef,
+    className: "twk-panel",
+    "data-noncommentable": "",
+    style: {
+      right: offsetRef.current.x,
+      bottom: offsetRef.current.y
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "twk-hd",
+    onMouseDown: onDragStart
+  }, /*#__PURE__*/React.createElement("b", null, title), /*#__PURE__*/React.createElement("button", {
+    className: "twk-x",
+    "aria-label": "Close tweaks",
+    onMouseDown: e => e.stopPropagation(),
+    onClick: dismiss
+  }, "\u2715")), /*#__PURE__*/React.createElement("div", {
+    className: "twk-body"
+  }, children, hasDeckStage && railEnabled && !noDeckControls && /*#__PURE__*/React.createElement(TweakSection, {
+    label: "Deck"
+  }, /*#__PURE__*/React.createElement(TweakToggle, {
+    label: "Thumbnail rail",
+    value: railVisible,
+    onChange: toggleRail
+  })))));
 }
 
 // ── Layout helpers ──────────────────────────────────────────────────────────
 
-function TweakSection({ label, children }) {
-  return (
-    <>
-      <div className="twk-sect">{label}</div>
-      {children}
-    </>
-  );
+function TweakSection({
+  label,
+  children
+}) {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "twk-sect"
+  }, label), children);
 }
-
-function TweakRow({ label, value, children, inline = false }) {
-  return (
-    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
-      <div className="twk-lbl">
-        <span>{label}</span>
-        {value != null && <span className="twk-val">{value}</span>}
-      </div>
-      {children}
-    </div>
-  );
+function TweakRow({
+  label,
+  value,
+  children,
+  inline = false
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: inline ? 'twk-row twk-row-h' : 'twk-row'
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "twk-lbl"
+  }, /*#__PURE__*/React.createElement("span", null, label), value != null && /*#__PURE__*/React.createElement("span", {
+    className: "twk-val"
+  }, value)), children);
 }
 
 // ── Controls ────────────────────────────────────────────────────────────────
 
-function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
-  return (
-    <TweakRow label={label} value={`${value}${unit}`}>
-      <input type="range" className="twk-slider" min={min} max={max} step={step}
-             value={value} onChange={(e) => onChange(Number(e.target.value))} />
-    </TweakRow>
-  );
+function TweakSlider({
+  label,
+  value,
+  min = 0,
+  max = 100,
+  step = 1,
+  unit = '',
+  onChange
+}) {
+  return /*#__PURE__*/React.createElement(TweakRow, {
+    label: label,
+    value: `${value}${unit}`
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    className: "twk-slider",
+    min: min,
+    max: max,
+    step: step,
+    value: value,
+    onChange: e => onChange(Number(e.target.value))
+  }));
 }
-
-function TweakToggle({ label, value, onChange }) {
-  return (
-    <div className="twk-row twk-row-h">
-      <div className="twk-lbl"><span>{label}</span></div>
-      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
-              role="switch" aria-checked={!!value}
-              onClick={() => onChange(!value)}><i /></button>
-    </div>
-  );
+function TweakToggle({
+  label,
+  value,
+  onChange
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "twk-row twk-row-h"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "twk-lbl"
+  }, /*#__PURE__*/React.createElement("span", null, label)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "twk-toggle",
+    "data-on": value ? '1' : '0',
+    role: "switch",
+    "aria-checked": !!value,
+    onClick: () => onChange(!value)
+  }, /*#__PURE__*/React.createElement("i", null)));
 }
-
-function TweakRadio({ label, value, options, onChange }) {
+function TweakRadio({
+  label,
+  value,
+  options,
+  onChange
+}) {
   const trackRef = React.useRef(null);
   const [dragging, setDragging] = React.useState(false);
   // The active value is read by pointer-move handlers attached for the lifetime
@@ -3278,35 +3302,43 @@ function TweakRadio({ label, value, options, onChange }) {
   // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
   // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
   // back to a dropdown rather than wrap.
-  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const labelLen = o => String(typeof o === 'object' ? o.label : o).length;
   const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
-  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  const fitsAsSegments = maxLen <= ({
+    2: 16,
+    3: 10
+  }[options.length] ?? 0);
   if (!fitsAsSegments) {
     // <select> emits strings — map back to the original option value so the
     // fallback stays type-preserving (numbers, booleans) like the segment path.
-    const resolve = (s) => {
-      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+    const resolve = s => {
+      const m = options.find(o => String(typeof o === 'object' ? o.value : o) === s);
       return m === undefined ? s : typeof m === 'object' ? m.value : m;
     };
-    return <TweakSelect label={label} value={value} options={options}
-                        onChange={(s) => onChange(resolve(s))} />;
+    return /*#__PURE__*/React.createElement(TweakSelect, {
+      label: label,
+      value: value,
+      options: options,
+      onChange: s => onChange(resolve(s))
+    });
   }
-  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
-  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const opts = options.map(o => typeof o === 'object' ? o : {
+    value: o,
+    label: o
+  });
+  const idx = Math.max(0, opts.findIndex(o => o.value === value));
   const n = opts.length;
-
-  const segAt = (clientX) => {
+  const segAt = clientX => {
     const r = trackRef.current.getBoundingClientRect();
     const inner = r.width - 4;
-    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    const i = Math.floor((clientX - r.left - 2) / inner * n);
     return opts[Math.max(0, Math.min(n - 1, i))].value;
   };
-
-  const onPointerDown = (e) => {
+  const onPointerDown = e => {
     setDragging(true);
     const v0 = segAt(e.clientX);
     if (v0 !== valueRef.current) onChange(v0);
-    const move = (ev) => {
+    const move = ev => {
       if (!trackRef.current) return;
       const v = segAt(ev.clientX);
       if (v !== valueRef.current) onChange(v);
@@ -3319,59 +3351,89 @@ function TweakRadio({ label, value, options, onChange }) {
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
   };
-
-  return (
-    <TweakRow label={label}>
-      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
-           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
-        <div className="twk-seg-thumb"
-             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
-                      width: `calc((100% - 4px) / ${n})` }} />
-        {opts.map((o) => (
-          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </TweakRow>
-  );
+  return /*#__PURE__*/React.createElement(TweakRow, {
+    label: label
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: trackRef,
+    role: "radiogroup",
+    onPointerDown: onPointerDown,
+    className: dragging ? 'twk-seg dragging' : 'twk-seg'
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "twk-seg-thumb",
+    style: {
+      left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+      width: `calc((100% - 4px) / ${n})`
+    }
+  }), opts.map(o => /*#__PURE__*/React.createElement("button", {
+    key: o.value,
+    type: "button",
+    role: "radio",
+    "aria-checked": o.value === value
+  }, o.label))));
 }
-
-function TweakSelect({ label, value, options, onChange }) {
-  return (
-    <TweakRow label={label}>
-      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => {
-          const v = typeof o === 'object' ? o.value : o;
-          const l = typeof o === 'object' ? o.label : o;
-          return <option key={v} value={v}>{l}</option>;
-        })}
-      </select>
-    </TweakRow>
-  );
+function TweakSelect({
+  label,
+  value,
+  options,
+  onChange
+}) {
+  return /*#__PURE__*/React.createElement(TweakRow, {
+    label: label
+  }, /*#__PURE__*/React.createElement("select", {
+    className: "twk-field",
+    value: value,
+    onChange: e => onChange(e.target.value)
+  }, options.map(o => {
+    const v = typeof o === 'object' ? o.value : o;
+    const l = typeof o === 'object' ? o.label : o;
+    return /*#__PURE__*/React.createElement("option", {
+      key: v,
+      value: v
+    }, l);
+  })));
 }
-
-function TweakText({ label, value, placeholder, onChange }) {
-  return (
-    <TweakRow label={label}>
-      <input className="twk-field" type="text" value={value} placeholder={placeholder}
-             onChange={(e) => onChange(e.target.value)} />
-    </TweakRow>
-  );
+function TweakText({
+  label,
+  value,
+  placeholder,
+  onChange
+}) {
+  return /*#__PURE__*/React.createElement(TweakRow, {
+    label: label
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "twk-field",
+    type: "text",
+    value: value,
+    placeholder: placeholder,
+    onChange: e => onChange(e.target.value)
+  }));
 }
-
-function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
-  const clamp = (n) => {
+function TweakNumber({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  unit = '',
+  onChange
+}) {
+  const clamp = n => {
     if (min != null && n < min) return min;
     if (max != null && n > max) return max;
     return n;
   };
-  const startRef = React.useRef({ x: 0, val: 0 });
-  const onScrubStart = (e) => {
+  const startRef = React.useRef({
+    x: 0,
+    val: 0
+  });
+  const onScrubStart = e => {
     e.preventDefault();
-    startRef.current = { x: e.clientX, val: value };
+    startRef.current = {
+      x: e.clientX,
+      val: value
+    };
     const decimals = (String(step).split('.')[1] || '').length;
-    const move = (ev) => {
+    const move = ev => {
       const dx = ev.clientX - startRef.current.x;
       const raw = startRef.current.val + dx * step;
       const snapped = Math.round(raw / step) * step;
@@ -3384,14 +3446,21 @@ function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) 
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
   };
-  return (
-    <div className="twk-num">
-      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
-      <input type="number" value={value} min={min} max={max} step={step}
-             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
-      {unit && <span className="twk-num-unit">{unit}</span>}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "twk-num"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "twk-num-lbl",
+    onPointerDown: onScrubStart
+  }, label), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    value: value,
+    min: min,
+    max: max,
+    step: step,
+    onChange: e => onChange(clamp(Number(e.target.value)))
+  }), unit && /*#__PURE__*/React.createElement("span", {
+    className: "twk-num-unit"
+  }, unit));
 }
 
 // Relative-luminance contrast pick — checkmarks drawn over a swatch need to
@@ -3399,20 +3468,27 @@ function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) 
 // only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
 function __twkIsLight(hex) {
   const h = String(hex).replace('#', '');
-  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const x = h.length === 3 ? h.replace(/./g, c => c + c) : h.padEnd(6, '0');
   const n = parseInt(x.slice(0, 6), 16);
   if (Number.isNaN(n)) return true;
-  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const r = n >> 16 & 255,
+    g = n >> 8 & 255,
+    b = n & 255;
   return r * 299 + g * 587 + b * 114 > 148000;
 }
-
-const __TwkCheck = ({ light }) => (
-  <svg viewBox="0 0 14 14" aria-hidden="true">
-    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
-          strokeLinecap="round" strokeLinejoin="round"
-          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
-  </svg>
-);
+const __TwkCheck = ({
+  light
+}) => /*#__PURE__*/React.createElement("svg", {
+  viewBox: "0 0 14 14",
+  "aria-hidden": "true"
+}, /*#__PURE__*/React.createElement("path", {
+  d: "M3 7.2 5.8 10 11 4.2",
+  fill: "none",
+  strokeWidth: "2.2",
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  stroke: light ? 'rgba(0,0,0,.78)' : '#fff'
+}));
 
 // TweakColor — curated color/palette picker. Each option is either a single
 // hex string or an array of 1-5 hex strings; the card adapts — a lone color
@@ -3420,798 +3496,1725 @@ const __TwkCheck = ({ light }) => (
 // rest stacked in a sharp column on the right. onChange emits the
 // option in the shape it was passed (string stays string, array stays array).
 // Without options it falls back to the native color input for back-compat.
-function TweakColor({ label, value, options, onChange }) {
+function TweakColor({
+  label,
+  value,
+  options,
+  onChange
+}) {
   if (!options || !options.length) {
-    return (
-      <div className="twk-row twk-row-h">
-        <div className="twk-lbl"><span>{label}</span></div>
-        <input type="color" className="twk-swatch" value={value}
-               onChange={(e) => onChange(e.target.value)} />
-      </div>
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      className: "twk-row twk-row-h"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "twk-lbl"
+    }, /*#__PURE__*/React.createElement("span", null, label)), /*#__PURE__*/React.createElement("input", {
+      type: "color",
+      className: "twk-swatch",
+      value: value,
+      onChange: e => onChange(e.target.value)
+    }));
   }
   // Native <input type=color> emits lowercase hex per the HTML spec, so
   // compare case-insensitively. String() guards JSON.stringify(undefined),
   // which returns the primitive undefined (no .toLowerCase).
-  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const key = o => String(JSON.stringify(o)).toLowerCase();
   const cur = key(value);
-  return (
-    <TweakRow label={label}>
-      <div className="twk-chips" role="radiogroup">
-        {options.map((o, i) => {
-          const colors = Array.isArray(o) ? o : [o];
-          const [hero, ...rest] = colors;
-          const sup = rest.slice(0, 4);
-          const on = key(o) === cur;
-          return (
-            <button key={i} type="button" className="twk-chip" role="radio"
-                    aria-checked={on} data-on={on ? '1' : '0'}
-                    aria-label={colors.join(', ')} title={colors.join(' · ')}
-                    style={{ background: hero }}
-                    onClick={() => onChange(o)}>
-              {sup.length > 0 && (
-                <span>
-                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
-                </span>
-              )}
-              {on && <__TwkCheck light={__twkIsLight(hero)} />}
-            </button>
-          );
-        })}
-      </div>
-    </TweakRow>
-  );
+  return /*#__PURE__*/React.createElement(TweakRow, {
+    label: label
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "twk-chips",
+    role: "radiogroup"
+  }, options.map((o, i) => {
+    const colors = Array.isArray(o) ? o : [o];
+    const [hero, ...rest] = colors;
+    const sup = rest.slice(0, 4);
+    const on = key(o) === cur;
+    return /*#__PURE__*/React.createElement("button", {
+      key: i,
+      type: "button",
+      className: "twk-chip",
+      role: "radio",
+      "aria-checked": on,
+      "data-on": on ? '1' : '0',
+      "aria-label": colors.join(', '),
+      title: colors.join(' · '),
+      style: {
+        background: hero
+      },
+      onClick: () => onChange(o)
+    }, sup.length > 0 && /*#__PURE__*/React.createElement("span", null, sup.map((c, j) => /*#__PURE__*/React.createElement("i", {
+      key: j,
+      style: {
+        background: c
+      }
+    }))), on && /*#__PURE__*/React.createElement(__TwkCheck, {
+      light: __twkIsLight(hero)
+    }));
+  })));
 }
-
-function TweakButton({ label, onClick, secondary = false }) {
-  return (
-    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
-            onClick={onClick}>{label}</button>
-  );
+function TweakButton({
+  label,
+  onClick,
+  secondary = false
+}) {
+  return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: secondary ? 'twk-btn secondary' : 'twk-btn',
+    onClick: onClick
+  }, label);
 }
-
-Object.assign(window, {
-  useTweaks, TweaksPanel, TweakSection, TweakRow,
-  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
-  TweakText, TweakNumber, TweakColor, TweakButton,
-});
-
-</script>
-<script type="text/babel" data-presets="react">
-/* global React */
-const { useState, useMemo, useEffect, useRef } = React;
+const {
+  useMemo,
+  useRef
+} = React;
 
 // ---------- formatting helpers ----------
-const fmt = (n) => (typeof n === 'number' ? n.toLocaleString('en-IN') : (n ?? '—'));
-const pct = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0);
+const fmt = n => typeof n === 'number' ? n.toLocaleString('en-IN') : n ?? '—';
+const pct = (a, b) => b > 0 ? Math.round(a / b * 100) : 0;
 
 // ---------- small primitives ----------
-function Rule({ heavy = false, ornament = false, style = {} }) {
+function Rule({
+  heavy = false,
+  ornament = false,
+  style = {}
+}) {
   if (ornament) {
-    return (
-      <div style={{display:'flex',alignItems:'center',gap:14,margin:'8px 0',...style}}>
-        <span style={{flex:1,height:1,background:'var(--rule)'}} />
-        <span style={{color:'var(--gold)',fontSize:18,lineHeight:1,letterSpacing:'.2em'}}>✦</span>
-        <span style={{flex:1,height:1,background:'var(--rule)'}} />
-      </div>
-    );
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        margin: '8px 0',
+        ...style
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        flex: 1,
+        height: 1,
+        background: 'var(--rule)'
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: 'var(--gold)',
+        fontSize: 18,
+        lineHeight: 1,
+        letterSpacing: '.2em'
+      }
+    }, "\u2726"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        flex: 1,
+        height: 1,
+        background: 'var(--rule)'
+      }
+    }));
   }
-  return <div style={{height: heavy ? 2 : 1, background: heavy ? 'var(--ink)' : 'var(--rule)', ...style}} />;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: heavy ? 2 : 1,
+      background: heavy ? 'var(--ink)' : 'var(--rule)',
+      ...style
+    }
+  });
 }
-
-function Eyebrow({ children, ar, style = {} }) {
-  return (
-    <div style={style}>
-      <div style={{fontSize:11,letterSpacing:'.22em',textTransform:'uppercase',color:'var(--ink-mute)',fontWeight:600}}>{children}</div>
-      {ar && <div dir="rtl" style={{fontSize:11.5,fontFamily:'var(--serif)',color:'var(--ink-mute)',marginTop:2,opacity:0.85}}>{ar}</div>}
-    </div>
-  );
+function Eyebrow({
+  children,
+  ar,
+  style = {}
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: style
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      letterSpacing: '.22em',
+      textTransform: 'uppercase',
+      color: 'var(--ink-mute)',
+      fontWeight: 600
+    }
+  }, children), ar && /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    style: {
+      fontSize: 11.5,
+      fontFamily: 'var(--serif)',
+      color: 'var(--ink-mute)',
+      marginTop: 2,
+      opacity: 0.85
+    }
+  }, ar));
 }
-
-function SerifH({ size = 38, italic = false, children, ar, arSize, arColor, style = {} }) {
-  return (
-    <div>
-      <div style={{fontFamily:'var(--serif)',fontWeight:500,fontStyle:italic?'italic':'normal',fontSize:size,lineHeight:1.05,letterSpacing:'-0.01em',color:'var(--ink)',...style}}>{children}</div>
-      {ar && <div dir="rtl" style={{fontFamily:'var(--serif)',fontWeight:500,fontSize: arSize ?? size*0.72, marginTop:4, lineHeight:1.15, color: arColor || 'var(--maroon)', fontStyle: italic?'italic':'normal'}}>{ar}</div>}
-    </div>
-  );
+function SerifH({
+  size = 38,
+  italic = false,
+  children,
+  ar,
+  arSize,
+  arColor,
+  style = {}
+}) {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontWeight: 500,
+      fontStyle: italic ? 'italic' : 'normal',
+      fontSize: size,
+      lineHeight: 1.05,
+      letterSpacing: '-0.01em',
+      color: 'var(--ink)',
+      ...style
+    }
+  }, children), ar && /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    style: {
+      fontFamily: 'var(--serif)',
+      fontWeight: 500,
+      fontSize: arSize ?? size * 0.72,
+      marginTop: 4,
+      lineHeight: 1.15,
+      color: arColor || 'var(--maroon)',
+      fontStyle: italic ? 'italic' : 'normal'
+    }
+  }, ar));
 }
-
-function Stat({ label, arLabel, value, arValue, sub, arSub, accent }) {
-  return (
-    <div style={{padding:'18px 22px',borderRight:'1px solid var(--rule)',minWidth:0,overflow:'hidden'}}>
-      <Eyebrow style={{marginBottom:8}} ar={arLabel}>{label}</Eyebrow>
-      <div style={{fontFamily:'var(--serif)',fontWeight:500,fontSize:'clamp(28px, 3.2vw, 38px)',lineHeight:1,letterSpacing:'-0.02em',color: accent || 'var(--ink)',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{value}</div>
-      {arValue && <div dir="rtl" style={{fontFamily:'var(--serif)',fontSize:'clamp(16px, 1.8vw, 22px)',marginTop:3,color: accent||'var(--ink-soft)',opacity:0.75,fontVariantNumeric:'tabular-nums'}}>{arValue}</div>}
-      {sub && <div style={{marginTop:6,fontSize:12.5,color:'var(--ink-mute)',lineHeight:1.3}}>{sub}</div>}
-      {arSub && <div dir="rtl" style={{marginTop:2,fontSize:12,fontFamily:'var(--serif)',color:'var(--ink-mute)',lineHeight:1.4,opacity:0.85}}>{arSub}</div>}
-    </div>
-  );
+function Stat({
+  label,
+  arLabel,
+  value,
+  arValue,
+  sub,
+  arSub,
+  accent
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '18px 22px',
+      borderRight: '1px solid var(--rule)',
+      minWidth: 0,
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      marginBottom: 8
+    },
+    ar: arLabel
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontWeight: 500,
+      fontSize: 'clamp(28px, 3.2vw, 38px)',
+      lineHeight: 1,
+      letterSpacing: '-0.02em',
+      color: accent || 'var(--ink)',
+      fontVariantNumeric: 'tabular-nums',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
+    }
+  }, value), arValue && /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 'clamp(16px, 1.8vw, 22px)',
+      marginTop: 3,
+      color: accent || 'var(--ink-soft)',
+      opacity: 0.75,
+      fontVariantNumeric: 'tabular-nums'
+    }
+  }, arValue), sub && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6,
+      fontSize: 12.5,
+      color: 'var(--ink-mute)',
+      lineHeight: 1.3
+    }
+  }, sub), arSub && /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    style: {
+      marginTop: 2,
+      fontSize: 12,
+      fontFamily: 'var(--serif)',
+      color: 'var(--ink-mute)',
+      lineHeight: 1.4,
+      opacity: 0.85
+    }
+  }, arSub));
 }
 
 // ---------- HEADER ----------
-function Header({ tab, setTab, total }) {
-  const tabs = [
-    { id:'overview', label:'Overview',           ar: 'نظرة عامة' },
-    { id:'mauze',    label:'Mauze',              ar: 'المواضع' },
-    { id:'female',   label:'Female Departments', ar: 'أقسام النساء' },
-    { id:'mahir',    label:'Mahirul Makan',      ar: 'ماهر المكان' },
-  ];
-  return (
-    <header style={{maxWidth:1400,margin:'0 auto',padding:'40px 40px 0'}}>
-      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:40,flexWrap:'wrap'}}>
-        <div style={{flex:'1 1 540px',minWidth:0}}>
-          <Eyebrow ar="عشرة مباركة · ١٤٤٨ هـ · موجز العمليات">Ashara Mubaraka · 1448 AH · Operations Brief</Eyebrow>
-          <div style={{margin:'14px 0 10px',display:'flex',flexDirection:'column',gap:6}}>
-            <SerifH size={68} ar="حزب السيفي" arSize={48} arColor="var(--ink)" style={{letterSpacing:'-0.025em',lineHeight:1}}>Hizb-e-Saify</SerifH>
-            <SerifH italic size={32} ar="لوحة عدّ المجموعات" arSize={26} style={{color:'var(--maroon)',lineHeight:1.1}}>Group&nbsp;Count Dashboard</SerifH>
-          </div>
-          <div style={{fontSize:14,color:'var(--ink-soft)',maxWidth:680,marginTop:8}}>
-            Mauze capacity, mumineen count, group count and CMZ capacity across nine Mauze ·
-            Female department headcounts · Mahirul Makan Talabat & Talebaat assignments.
-          </div>
-          <div dir="rtl" style={{fontSize:15,fontFamily:'var(--serif)',color:'var(--ink-soft)',maxWidth:720,marginTop:8,lineHeight:1.7}}>
-            سعة الموضع، وعدد المؤمنين، وعدد المجموعات، وسعة CMZ في تسعة مواضع · أعداد موظفات الأقسام · توزيع ماهرات المكان من الطلبة والطالبات.
-          </div>
-        </div>
-
-      </div>
-
-      <div style={{margin:'34px 0 0'}}>
-        <Rule heavy />
-      </div>
-
-      <nav style={{display:'flex',gap:0,borderBottom:'1px solid var(--rule)',marginBottom:0,flexWrap:'wrap'}}>
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            style={{
-              background:'transparent',
-              border:'none',
-              padding:'14px 22px 12px',
-              fontFamily:'var(--sans)',
-              fontSize:13.5,
-              fontWeight: tab===t.id ? 600 : 500,
-              letterSpacing:'.04em',
-              color: tab===t.id ? 'var(--ink)' : 'var(--ink-mute)',
-              cursor:'pointer',
-              borderBottom: tab===t.id ? '2px solid var(--maroon)' : '2px solid transparent',
-              marginBottom:-1,
-              transition:'all .15s',
-              textAlign:'left',
-              lineHeight:1.2,
-            }}
-            onMouseEnter={e=>{if(tab!==t.id)e.currentTarget.style.color='var(--ink-soft)'}}
-            onMouseLeave={e=>{if(tab!==t.id)e.currentTarget.style.color='var(--ink-mute)'}}
-          >
-            <div>{t.label}</div>
-            <div dir="rtl" style={{fontFamily:'var(--serif)',fontSize:13.5,marginTop:2,opacity:0.7,fontWeight:500}}>{t.ar}</div>
-          </button>
-        ))}
-      </nav>
-    </header>
-  );
+function Header({
+  tab,
+  setTab,
+  total
+}) {
+  const tabs = [{
+    id: 'overview',
+    label: 'Overview',
+    ar: 'نظرة عامة'
+  }, {
+    id: 'mauze',
+    label: 'Mauze',
+    ar: 'المواضع'
+  }, {
+    id: 'female',
+    label: 'Female Departments',
+    ar: 'أقسام النساء'
+  }, {
+    id: 'mahir',
+    label: 'Mahirul Makan',
+    ar: 'ماهر المكان'
+  }];
+  return /*#__PURE__*/React.createElement("header", {
+    style: {
+      maxWidth: 1400,
+      margin: '0 auto',
+      padding: '40px 40px 0'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 40,
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: '1 1 540px',
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    ar: "\u0639\u0634\u0631\u0629 \u0645\u0628\u0627\u0631\u0643\u0629 \xB7 \u0661\u0664\u0664\u0668 \u0647\u0640 \xB7 \u0645\u0648\u062C\u0632 \u0627\u0644\u0639\u0645\u0644\u064A\u0627\u062A"
+  }, "Ashara Mubaraka \xB7 1448 AH \xB7 Operations Brief"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: '14px 0 10px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement(SerifH, {
+    size: 68,
+    ar: "\u062D\u0632\u0628 \u0627\u0644\u0633\u064A\u0641\u064A",
+    arSize: 48,
+    arColor: "var(--ink)",
+    style: {
+      letterSpacing: '-0.025em',
+      lineHeight: 1
+    }
+  }, "Hizb-e-Saify"), /*#__PURE__*/React.createElement(SerifH, {
+    italic: true,
+    size: 32,
+    ar: "\u0644\u0648\u062D\u0629 \u0639\u062F\u0651 \u0627\u0644\u0645\u062C\u0645\u0648\u0639\u0627\u062A",
+    arSize: 26,
+    style: {
+      color: 'var(--maroon)',
+      lineHeight: 1.1
+    }
+  }, "Group\xA0Count Dashboard")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      color: 'var(--ink-soft)',
+      maxWidth: 680,
+      marginTop: 8
+    }
+  }, "Mauze capacity, mumineen count, group count and CMZ capacity across nine Mauze \xB7 Female department headcounts \xB7 Mahirul Makan Talabat & Talebaat assignments."), /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    style: {
+      fontSize: 15,
+      fontFamily: 'var(--serif)',
+      color: 'var(--ink-soft)',
+      maxWidth: 720,
+      marginTop: 8,
+      lineHeight: 1.7
+    }
+  }, "\u0633\u0639\u0629 \u0627\u0644\u0645\u0648\u0636\u0639\u060C \u0648\u0639\u062F\u062F \u0627\u0644\u0645\u0624\u0645\u0646\u064A\u0646\u060C \u0648\u0639\u062F\u062F \u0627\u0644\u0645\u062C\u0645\u0648\u0639\u0627\u062A\u060C \u0648\u0633\u0639\u0629 CMZ \u0641\u064A \u062A\u0633\u0639\u0629 \u0645\u0648\u0627\u0636\u0639 \xB7 \u0623\u0639\u062F\u0627\u062F \u0645\u0648\u0638\u0641\u0627\u062A \u0627\u0644\u0623\u0642\u0633\u0627\u0645 \xB7 \u062A\u0648\u0632\u064A\u0639 \u0645\u0627\u0647\u0631\u0627\u062A \u0627\u0644\u0645\u0643\u0627\u0646 \u0645\u0646 \u0627\u0644\u0637\u0644\u0628\u0629 \u0648\u0627\u0644\u0637\u0627\u0644\u0628\u0627\u062A."))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      margin: '34px 0 0'
+    }
+  }, /*#__PURE__*/React.createElement(Rule, {
+    heavy: true
+  })), /*#__PURE__*/React.createElement("nav", {
+    style: {
+      display: 'flex',
+      gap: 0,
+      borderBottom: '1px solid var(--rule)',
+      marginBottom: 0,
+      flexWrap: 'wrap'
+    }
+  }, tabs.map(t => /*#__PURE__*/React.createElement("button", {
+    key: t.id,
+    onClick: () => setTab(t.id),
+    style: {
+      background: 'transparent',
+      border: 'none',
+      padding: '14px 22px 12px',
+      fontFamily: 'var(--sans)',
+      fontSize: 13.5,
+      fontWeight: tab === t.id ? 600 : 500,
+      letterSpacing: '.04em',
+      color: tab === t.id ? 'var(--ink)' : 'var(--ink-mute)',
+      cursor: 'pointer',
+      borderBottom: tab === t.id ? '2px solid var(--maroon)' : '2px solid transparent',
+      marginBottom: -1,
+      transition: 'all .15s',
+      textAlign: 'left',
+      lineHeight: 1.2
+    },
+    onMouseEnter: e => {
+      if (tab !== t.id) e.currentTarget.style.color = 'var(--ink-soft)';
+    },
+    onMouseLeave: e => {
+      if (tab !== t.id) e.currentTarget.style.color = 'var(--ink-mute)';
+    }
+  }, /*#__PURE__*/React.createElement("div", null, t.label), /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 13.5,
+      marginTop: 2,
+      opacity: 0.7,
+      fontWeight: 500
+    }
+  }, t.ar)))));
 }
 
 // ---------- OVERVIEW: KPI strip + Mauze grid ----------
-function KpiStrip({ data }) {
+function KpiStrip({
+  data
+}) {
   const mauze = data.mauze;
-  const totalCap = mauze.reduce((s,m)=>s+m.capacity,0);
-  const totalCmz = mauze.reduce((s,m)=>s+m.cmzCapacity,0);
-  const totalGroups = mauze.reduce((s,m)=>s+m.totalGroups,0);
-  const totalMumin = mauze.reduce((s,m)=>s+m.perGroup,0);
-  const totalFemale = Object.values(data.female.totals).reduce((s,v)=>s+v,0);
+  const totalCap = mauze.reduce((s, m) => s + m.capacity, 0);
+  const totalCmz = mauze.reduce((s, m) => s + m.cmzCapacity, 0);
+  const totalGroups = mauze.reduce((s, m) => s + m.totalGroups, 0);
+  const totalMumin = mauze.reduce((s, m) => s + m.perGroup, 0);
+  const totalFemale = Object.values(data.female.totals).reduce((s, v) => s + v, 0);
   const totalMahir = data.mahirulMakan.talabat.length + data.mahirulMakan.talebaat.length;
-
-  return (
-    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))',background:'var(--paper-2)',border:'1px solid var(--rule)',borderRadius:2,marginTop:28,overflow:'hidden'}}>
-      <Stat label="Mauze" value="9" sub="Active waaz cities" />
-      <Stat label="Total Capacity" value={fmt(totalCap)} sub="Cumulative across all venues" />
-      <Stat label="CMZ Capacity" value={fmt(totalCmz)} sub={`${pct(totalCmz,totalCap)}% of total`} accent="var(--maroon)" />
-      <Stat label="Total Groups" value={fmt(totalGroups)} sub={`${totalMumin.toLocaleString()} mumineen / group avg`} />
-      <Stat label="Female (Depts.)" value={fmt(totalFemale)} sub="31 departments tracked" />
-      <div style={{padding:'18px 22px',minWidth:0}}>
-        <Eyebrow style={{marginBottom:8}}>Mahirul Makan</Eyebrow>
-        <div style={{fontFamily:'var(--serif)',fontSize:36,lineHeight:1,letterSpacing:'-.02em',color:'var(--ink)',fontVariantNumeric:'tabular-nums'}}>{totalMahir}</div>
-        <div style={{marginTop:6,fontSize:12.5,color:'var(--ink-mute)'}}>{data.mahirulMakan.talabat.length} Talabat · {data.mahirulMakan.talebaat.length} Talebaat (named)</div>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+      background: 'var(--paper-2)',
+      border: '1px solid var(--rule)',
+      borderRadius: 2,
+      marginTop: 28,
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement(Stat, {
+    label: "Mauze",
+    value: "9",
+    sub: "Active waaz cities"
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Total Capacity",
+    value: fmt(totalCap),
+    sub: "Cumulative across all venues"
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "CMZ Capacity",
+    value: fmt(totalCmz),
+    sub: `${pct(totalCmz, totalCap)}% of total`,
+    accent: "var(--maroon)"
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Total Groups",
+    value: fmt(totalGroups),
+    sub: `${totalMumin.toLocaleString()} mumineen / group avg`
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Female (Depts.)",
+    value: fmt(totalFemale),
+    sub: "31 departments tracked"
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '18px 22px',
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      marginBottom: 8
+    }
+  }, "Mahirul Makan"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 36,
+      lineHeight: 1,
+      letterSpacing: '-.02em',
+      color: 'var(--ink)',
+      fontVariantNumeric: 'tabular-nums'
+    }
+  }, totalMahir), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6,
+      fontSize: 12.5,
+      color: 'var(--ink-mute)'
+    }
+  }, data.mahirulMakan.talabat.length, " Talabat \xB7 ", data.mahirulMakan.talebaat.length, " Talebaat (named)")));
 }
-
-function MauzeCard({ m, onOpen, rank }) {
+function MauzeCard({
+  m,
+  onOpen,
+  rank
+}) {
   const cmzShare = pct(m.cmzCapacity, m.capacity);
-  return (
-    <button onClick={onOpen} style={{
-      textAlign:'left',
-      background:'var(--paper)',
-      border:'1px solid var(--rule)',
-      padding:'22px 24px',
-      borderRadius:2,
-      cursor:'pointer',
-      transition:'all .18s ease',
-      position:'relative',
-      fontFamily:'inherit',
-      color:'inherit',
-    }}
-    onMouseEnter={e=>{
-      e.currentTarget.style.borderColor='var(--ink-soft)';
-      e.currentTarget.style.transform='translateY(-2px)';
-      e.currentTarget.style.boxShadow='0 8px 24px -12px rgba(26,37,66,0.18)';
-    }}
-    onMouseLeave={e=>{
-      e.currentTarget.style.borderColor='var(--rule)';
-      e.currentTarget.style.transform='translateY(0)';
-      e.currentTarget.style.boxShadow='none';
-    }}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8,marginBottom:10}}>
-        <div>
-          <div style={{fontFamily:'var(--mono)',fontSize:11,color:'var(--ink-mute)',letterSpacing:'.06em'}}>№ {String(rank).padStart(2,'0')}</div>
-          <SerifH size={30} style={{marginTop:2}}>{m.name}</SerifH>
-          {m.arabic && <div dir="rtl" style={{fontFamily:'var(--serif)',fontSize:18,color:'var(--maroon)',marginTop:2}}>{m.arabic}</div>}
-        </div>
-        <div style={{textAlign:'right'}}>
-          <Eyebrow style={{fontSize:10}}>HOD</Eyebrow>
-          <div style={{fontSize:13,marginTop:4,maxWidth:140,color:'var(--ink-soft)'}}>{m.hod}</div>
-        </div>
-      </div>
-
-      <Rule />
-
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px 18px',marginTop:16}}>
-        <div>
-          <Eyebrow style={{fontSize:10}}>Capacity</Eyebrow>
-          <div style={{fontFamily:'var(--serif)',fontSize:26,fontVariantNumeric:'tabular-nums',marginTop:2}}>{fmt(m.capacity)}</div>
-        </div>
-        <div>
-          <Eyebrow style={{fontSize:10}}>CMZ</Eyebrow>
-          <div style={{fontFamily:'var(--serif)',fontSize:26,color:'var(--maroon)',fontVariantNumeric:'tabular-nums',marginTop:2}}>{fmt(m.cmzCapacity)}</div>
-        </div>
-        <div>
-          <Eyebrow style={{fontSize:10}}>Groups</Eyebrow>
-          <div style={{fontFamily:'var(--serif)',fontSize:26,fontVariantNumeric:'tabular-nums',marginTop:2}}>{m.totalGroups}</div>
-        </div>
-        <div>
-          <Eyebrow style={{fontSize:10}}>Per Group</Eyebrow>
-          <div style={{fontFamily:'var(--serif)',fontSize:26,fontVariantNumeric:'tabular-nums',marginTop:2}}>{m.perGroup}</div>
-        </div>
-      </div>
-
-      {/* CMZ share bar */}
-      <div style={{marginTop:18}}>
-        <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'var(--ink-mute)',marginBottom:8,letterSpacing:'.04em',lineHeight:1.4}}>
-          <span>CMZ share of capacity</span>
-          <span style={{fontFamily:'var(--mono)',color:'var(--maroon)'}}>{cmzShare}%</span>
-        </div>
-        <div style={{height:6,background:'var(--paper-3)',borderRadius:1,overflow:'hidden'}}>
-          <div style={{height:'100%',width:`${cmzShare}%`,background:'linear-gradient(90deg, var(--maroon) 0%, var(--maroon-soft) 100%)'}} />
-        </div>
-      </div>
-
-      <div style={{marginTop:18,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div style={{fontSize:11,color:'var(--ink-mute)',fontStyle:'italic',fontFamily:'var(--serif)'}}>
-          {m.zones.length} zones · {m.subVenues.length} sub-venues
-        </div>
-        <span style={{fontSize:12,color:'var(--maroon)',fontWeight:500,letterSpacing:'.04em'}}>Open →</span>
-      </div>
-    </button>
-  );
+  return /*#__PURE__*/React.createElement("button", {
+    onClick: onOpen,
+    style: {
+      textAlign: 'left',
+      background: 'var(--paper)',
+      border: '1px solid var(--rule)',
+      padding: '22px 24px',
+      borderRadius: 2,
+      cursor: 'pointer',
+      transition: 'all .18s ease',
+      position: 'relative',
+      fontFamily: 'inherit',
+      color: 'inherit'
+    },
+    onMouseEnter: e => {
+      e.currentTarget.style.borderColor = 'var(--ink-soft)';
+      e.currentTarget.style.transform = 'translateY(-2px)';
+      e.currentTarget.style.boxShadow = '0 8px 24px -12px rgba(26,37,66,0.18)';
+    },
+    onMouseLeave: e => {
+      e.currentTarget.style.borderColor = 'var(--rule)';
+      e.currentTarget.style.transform = 'translateY(0)';
+      e.currentTarget.style.boxShadow = 'none';
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 8,
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 11,
+      color: 'var(--ink-mute)',
+      letterSpacing: '.06em'
+    }
+  }, "\u2116 ", String(rank).padStart(2, '0')), /*#__PURE__*/React.createElement(SerifH, {
+    size: 30,
+    style: {
+      marginTop: 2
+    }
+  }, m.name), m.arabic && /*#__PURE__*/React.createElement("div", {
+    dir: "rtl",
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 18,
+      color: 'var(--maroon)',
+      marginTop: 2
+    }
+  }, m.arabic)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      fontSize: 10
+    }
+  }, "HOD"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      marginTop: 4,
+      maxWidth: 140,
+      color: 'var(--ink-soft)'
+    }
+  }, m.hod))), /*#__PURE__*/React.createElement(Rule, null), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '14px 18px',
+      marginTop: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      fontSize: 10
+    }
+  }, "Capacity"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 26,
+      fontVariantNumeric: 'tabular-nums',
+      marginTop: 2
+    }
+  }, fmt(m.capacity))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      fontSize: 10
+    }
+  }, "CMZ"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 26,
+      color: 'var(--maroon)',
+      fontVariantNumeric: 'tabular-nums',
+      marginTop: 2
+    }
+  }, fmt(m.cmzCapacity))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      fontSize: 10
+    }
+  }, "Groups"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 26,
+      fontVariantNumeric: 'tabular-nums',
+      marginTop: 2
+    }
+  }, m.totalGroups)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      fontSize: 10
+    }
+  }, "Per Group"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 26,
+      fontVariantNumeric: 'tabular-nums',
+      marginTop: 2
+    }
+  }, m.perGroup))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      fontSize: 11,
+      color: 'var(--ink-mute)',
+      marginBottom: 8,
+      letterSpacing: '.04em',
+      lineHeight: 1.4
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "CMZ share of capacity"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: 'var(--mono)',
+      color: 'var(--maroon)'
+    }
+  }, cmzShare, "%")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 6,
+      background: 'var(--paper-3)',
+      borderRadius: 1,
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: '100%',
+      width: `${cmzShare}%`,
+      background: 'linear-gradient(90deg, var(--maroon) 0%, var(--maroon-soft) 100%)'
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 18,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: 'var(--ink-mute)',
+      fontStyle: 'italic',
+      fontFamily: 'var(--serif)'
+    }
+  }, m.zones.length, " zones \xB7 ", m.subVenues.length, " sub-venues"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: 'var(--maroon)',
+      fontWeight: 500,
+      letterSpacing: '.04em'
+    }
+  }, "Open \u2192")));
 }
-
-function OverviewView({ data, openMauze }) {
-  const sorted = [...data.mauze].sort((a,b)=>b.capacity-a.capacity);
-  return (
-    <div>
-      <KpiStrip data={data} />
-
-      <div style={{marginTop:48,display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:18}}>
-        <div>
-          <Eyebrow>Section I</Eyebrow>
-          <SerifH size={36} italic style={{marginTop:6}}>The Nine Mauze</SerifH>
-        </div>
-        <div style={{fontSize:12.5,color:'var(--ink-mute)',fontStyle:'italic',fontFamily:'var(--serif)',maxWidth:360,textAlign:'right'}}>
-          Ranked by total mauze capacity. Click any to view its zones, sub-venues, HOD prep report and Mahirul Makan division.
-        </div>
-      </div>
-      <Rule />
-
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))',gap:18,marginTop:24}}>
-        {sorted.map((m, i) => <MauzeCard key={m.name} m={m} rank={i+1} onOpen={()=>openMauze(m.name)} />)}
-      </div>
-
-      <CapacityChart data={data} />
-    </div>
-  );
+function OverviewView({
+  data,
+  openMauze
+}) {
+  const sorted = [...data.mauze].sort((a, b) => b.capacity - a.capacity);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(KpiStrip, {
+    data: data
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 48,
+      display: 'flex',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+      marginBottom: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, null, "Section I"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 36,
+    italic: true,
+    style: {
+      marginTop: 6
+    }
+  }, "The Nine Mauze")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: 'var(--ink-mute)',
+      fontStyle: 'italic',
+      fontFamily: 'var(--serif)',
+      maxWidth: 360,
+      textAlign: 'right'
+    }
+  }, "Ranked by total mauze capacity. Click any to view its zones, sub-venues, HOD prep report and Mahirul Makan division.")), /*#__PURE__*/React.createElement(Rule, null), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+      gap: 18,
+      marginTop: 24
+    }
+  }, sorted.map((m, i) => /*#__PURE__*/React.createElement(MauzeCard, {
+    key: m.name,
+    m: m,
+    rank: i + 1,
+    onOpen: () => openMauze(m.name)
+  }))), /*#__PURE__*/React.createElement(CapacityChart, {
+    data: data
+  }));
 }
 
 // ---------- CAPACITY CHART ----------
-function CapacityChart({ data }) {
-  const sorted = [...data.mauze].sort((a,b)=>b.capacity-a.capacity);
+function CapacityChart({
+  data
+}) {
+  const sorted = [...data.mauze].sort((a, b) => b.capacity - a.capacity);
   const max = sorted[0].capacity;
-  return (
-    <div style={{marginTop:64}}>
-      <Eyebrow>Section II</Eyebrow>
-      <SerifH size={36} italic style={{marginTop:6}}>Capacity at a Glance</SerifH>
-      <div style={{fontSize:12.5,color:'var(--ink-mute)',fontStyle:'italic',fontFamily:'var(--serif)',marginTop:4,marginBottom:18}}>
-        Each bar shows total mauze capacity; the maroon segment marks CMZ allocation.
-      </div>
-      <Rule />
-
-      <div style={{marginTop:28,display:'flex',flexDirection:'column',gap:14}}>
-        {sorted.map(m => {
-          const pctW = (m.capacity/max)*100;
-          const cmzW = (m.cmzCapacity/max)*100;
-          return (
-            <div key={m.name} style={{display:'grid',gridTemplateColumns:'160px 1fr 130px',alignItems:'center',gap:18}}>
-              <div>
-                <div style={{fontFamily:'var(--serif)',fontSize:20,fontWeight:500}}>{m.name}</div>
-                <div style={{fontSize:11,color:'var(--ink-mute)',letterSpacing:'.04em'}}>{m.totalGroups} groups</div>
-              </div>
-              <div style={{position:'relative',height:30}}>
-                <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${pctW}%`,background:'var(--paper-3)',borderRight:'1px solid var(--rule)'}}>
-                  <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${(m.cmzCapacity/m.capacity)*100}%`,background:'var(--maroon)'}} />
-                </div>
-                <div style={{position:'absolute',left:`calc(${pctW}% + 10px)`,top:'50%',transform:'translateY(-50%)',fontFamily:'var(--mono)',fontSize:12,color:'var(--ink-soft)'}}>
-                  {fmt(m.capacity)}
-                </div>
-              </div>
-              <div style={{textAlign:'right',fontSize:12,color:'var(--ink-mute)'}}>
-                CMZ <span style={{fontFamily:'var(--mono)',color:'var(--maroon)'}}>{fmt(m.cmzCapacity)}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div style={{marginTop:24,display:'flex',gap:24,fontSize:12,color:'var(--ink-mute)',alignItems:'center'}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}><span style={{display:'inline-block',width:14,height:10,background:'var(--paper-3)',border:'1px solid var(--rule)'}} />Total mauze capacity</div>
-        <div style={{display:'flex',alignItems:'center',gap:8}}><span style={{display:'inline-block',width:14,height:10,background:'var(--maroon)'}} />CMZ capacity</div>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 64
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, null, "Section II"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 36,
+    italic: true,
+    style: {
+      marginTop: 6
+    }
+  }, "Capacity at a Glance"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: 'var(--ink-mute)',
+      fontStyle: 'italic',
+      fontFamily: 'var(--serif)',
+      marginTop: 4,
+      marginBottom: 18
+    }
+  }, "Each bar shows total mauze capacity; the maroon segment marks CMZ allocation."), /*#__PURE__*/React.createElement(Rule, null), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 28,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 14
+    }
+  }, sorted.map(m => {
+    const pctW = m.capacity / max * 100;
+    const cmzW = m.cmzCapacity / max * 100;
+    return /*#__PURE__*/React.createElement("div", {
+      key: m.name,
+      style: {
+        display: 'grid',
+        gridTemplateColumns: '160px 1fr 130px',
+        alignItems: 'center',
+        gap: 18
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontFamily: 'var(--serif)',
+        fontSize: 20,
+        fontWeight: 500
+      }
+    }, m.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: 'var(--ink-mute)',
+        letterSpacing: '.04em'
+      }
+    }, m.totalGroups, " groups")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'relative',
+        height: 30
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        height: '100%',
+        width: `${pctW}%`,
+        background: 'var(--paper-3)',
+        borderRight: '1px solid var(--rule)'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        height: '100%',
+        width: `${m.cmzCapacity / m.capacity * 100}%`,
+        background: 'var(--maroon)'
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        position: 'absolute',
+        left: `calc(${pctW}% + 10px)`,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        fontFamily: 'var(--mono)',
+        fontSize: 12,
+        color: 'var(--ink-soft)'
+      }
+    }, fmt(m.capacity))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: 'right',
+        fontSize: 12,
+        color: 'var(--ink-mute)'
+      }
+    }, "CMZ ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: 'var(--mono)',
+        color: 'var(--maroon)'
+      }
+    }, fmt(m.cmzCapacity))));
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 24,
+      display: 'flex',
+      gap: 24,
+      fontSize: 12,
+      color: 'var(--ink-mute)',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'inline-block',
+      width: 14,
+      height: 10,
+      background: 'var(--paper-3)',
+      border: '1px solid var(--rule)'
+    }
+  }), "Total mauze capacity"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'inline-block',
+      width: 14,
+      height: 10,
+      background: 'var(--maroon)'
+    }
+  }), "CMZ capacity")));
 }
 
 // ---------- MAUZE DETAIL ----------
-function MauzeDetail({ name, data, setTab, openMauze }) {
+function MauzeDetail({
+  name,
+  data,
+  setTab,
+  openMauze
+}) {
   const m = data.mauze.find(x => x.name === name);
   const div = data.division;
   // Match division by uppercase city key
-  const divKey = Object.keys(div).find(k => k.toUpperCase().replace(/\s/g,'').includes(name.toUpperCase().split(' ')[0].slice(0,4).toUpperCase()))
-              || Object.keys(div).find(k => k.toUpperCase().startsWith(name.slice(0,3).toUpperCase()));
+  const divKey = Object.keys(div).find(k => k.toUpperCase().replace(/\s/g, '').includes(name.toUpperCase().split(' ')[0].slice(0, 4).toUpperCase())) || Object.keys(div).find(k => k.toUpperCase().startsWith(name.slice(0, 3).toUpperCase()));
   const division = divKey ? div[divKey] : null;
-
-  if (!m) return <div style={{padding:40}}>Mauze not found.</div>;
+  if (!m) return /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: 40
+    }
+  }, "Mauze not found.");
 
   // Nav between mauze
   const idx = data.mauze.findIndex(x => x.name === name);
   const prev = data.mauze[(idx - 1 + data.mauze.length) % data.mauze.length];
   const next = data.mauze[(idx + 1) % data.mauze.length];
-
-  return (
-    <div>
-      {/* Mauze switcher */}
-      <div style={{display:'flex',gap:6,marginTop:28,flexWrap:'wrap'}}>
-        {data.mauze.map(x => (
-          <button key={x.name} onClick={()=>openMauze(x.name)} style={{
-            background: x.name===name ? 'var(--ink)' : 'transparent',
-            color: x.name===name ? 'var(--paper)' : 'var(--ink-mute)',
-            border:`1px solid ${x.name===name?'var(--ink)':'var(--rule)'}`,
-            padding:'8px 14px',
-            fontSize:12,
-            fontWeight:500,
-            letterSpacing:'.04em',
-            cursor:'pointer',
-            fontFamily:'inherit',
-            borderRadius:2,
-          }}>{x.name}</button>
-        ))}
-      </div>
-
-      {/* Mauze hero */}
-      <div style={{marginTop:36,display:'grid',gridTemplateColumns:'1fr 1fr',gap:40,alignItems:'end'}}>
-        <div>
-          <Eyebrow>Mauze in Focus</Eyebrow>
-          <div style={{display:'flex',alignItems:'baseline',gap:18,marginTop:8,flexWrap:'wrap'}}>
-            <SerifH size={72}>{m.name}</SerifH>
-            {m.arabic && <SerifH size={42} style={{color:'var(--maroon)'}}><span dir="rtl">{m.arabic}</span></SerifH>}
-          </div>
-          <div style={{marginTop:10,fontFamily:'var(--serif)',fontStyle:'italic',fontSize:20,color:'var(--ink-soft)'}}>
-            Head of Department · {m.hod}
-          </div>
-        </div>
-        <div style={{textAlign:'right',fontSize:13,color:'var(--ink-mute)'}}>
-          <Eyebrow style={{marginBottom:6}}>Logic Applied</Eyebrow>
-          <div style={{fontFamily:'var(--serif)',fontSize:22,color:'var(--ink)',fontStyle:'italic'}}>{m.logic}</div>
-        </div>
-      </div>
-
-      <div style={{marginTop:24}}><Rule heavy /></div>
-
-      {/* Stats row */}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(5, 1fr)',marginTop:0,borderBottom:'1px solid var(--rule)'}}>
-        <Stat label="Mauze Capacity" value={fmt(m.capacity)} />
-        <Stat label="CMZ Capacity" value={fmt(m.cmzCapacity)} accent="var(--maroon)" sub={`${pct(m.cmzCapacity,m.capacity)}% of total`} />
-        <Stat label="Total Groups" value={fmt(m.totalGroups)} />
-        <Stat label="Mumineen / Group" value={fmt(m.perGroup)} />
-        <div style={{padding:'18px 22px',flex:1}}>
-          <Eyebrow style={{marginBottom:8}}>Zones</Eyebrow>
-          <div style={{fontFamily:'var(--serif)',fontSize:42,lineHeight:1}}>{m.zones.length || '—'}</div>
-          <div style={{marginTop:6,fontSize:12.5,color:'var(--ink-mute)'}}>{m.subVenues.length} sub-venues</div>
-        </div>
-      </div>
-
-      {/* Zones */}
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:40,marginTop:48}}>
-        <ZonesPanel mauze={m} />
-        <SubVenuesPanel mauze={m} />
-      </div>
-
-      {/* Mahirul Makan division for this city */}
-      {division && division.venues.length > 0 && (
-        <div style={{marginTop:56}}>
-          <Eyebrow>Mahirul Makan Division</Eyebrow>
-          <SerifH size={32} italic style={{marginTop:6}}>Venue-by-Venue Assignments</SerifH>
-          <Rule style={{marginTop:14}} />
-          <div style={{overflow:'auto',marginTop:18,border:'1px solid var(--rule)',borderRadius:2}}>
-            <table style={{width:'100%',borderCollapse:'collapse',fontSize:13.5}}>
-              <thead>
-                <tr style={{background:'var(--paper-2)',textAlign:'left'}}>
-                  <th style={th}>Venue</th>
-                  <th style={{...th,textAlign:'right'}}>Capacity</th>
-                  <th style={{...th,textAlign:'right'}}>Mahir Assigned</th>
-                  <th style={{...th,textAlign:'right'}}>Ratio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {division.venues.map((v, i) => (
-                  <tr key={i} style={{borderTop:'1px solid var(--rule-soft)'}}>
-                    <td style={td}>
-                      {v.name}
-                      {v.side && <span style={{marginLeft:8,fontSize:10,padding:'2px 7px',borderRadius:8,background:v.side==='ladies'?'rgba(122,31,43,0.1)':'rgba(26,37,66,0.07)',color:v.side==='ladies'?'var(--maroon)':'var(--ink-soft)',letterSpacing:'.06em',textTransform:'uppercase',fontWeight:500,verticalAlign:'middle'}}>{v.side}</span>}
-                    </td>
-                    <td style={{...td,textAlign:'right',fontFamily:'var(--mono)'}}>{fmt(v.capacity)}</td>
-                    <td style={{...td,textAlign:'right',fontFamily:'var(--mono)',color:'var(--maroon)'}}>{v.assigned}</td>
-                    <td style={{...td,textAlign:'right',fontFamily:'var(--mono)',color:'var(--ink-mute)'}}>1 : {Math.round(v.capacity / v.assigned)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* HOD Prep report */}
-      {m.prepReport && (
-        <div style={{marginTop:56}}>
-          <Eyebrow>HOD Preparation Report</Eyebrow>
-          <SerifH size={32} italic style={{marginTop:6}}>Status & Next Steps</SerifH>
-          <Rule style={{marginTop:14}} />
-          <div style={{
-            marginTop:20,
-            padding:'24px 28px',
-            background:'var(--paper-2)',
-            border:'1px solid var(--rule)',
-            borderRadius:2,
-            fontFamily:'var(--serif)',
-            fontSize:17,
-            lineHeight:1.65,
-            color:'var(--ink-soft)',
-            whiteSpace:'pre-wrap',
-            fontStyle:'italic',
-            position:'relative',
-          }}>
-            <span style={{position:'absolute',top:-2,left:18,fontSize:54,color:'var(--gold)',fontFamily:'var(--serif)',lineHeight:1,opacity:.5}}>“</span>
-            <div style={{paddingLeft:30}}>{m.prepReport.trim()}</div>
-          </div>
-        </div>
-      )}
-
-      {/* prev/next */}
-      <div style={{display:'flex',justifyContent:'space-between',marginTop:60,paddingTop:24,borderTop:'1px solid var(--rule)'}}>
-        <button onClick={()=>openMauze(prev.name)} style={navBtn}>
-          <Eyebrow style={{fontSize:10,marginBottom:4}}>Previous</Eyebrow>
-          <SerifH size={22} italic>← {prev.name}</SerifH>
-        </button>
-        <button onClick={()=>openMauze(next.name)} style={{...navBtn,textAlign:'right'}}>
-          <Eyebrow style={{fontSize:10,marginBottom:4}}>Next</Eyebrow>
-          <SerifH size={22} italic>{next.name} →</SerifH>
-        </button>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 6,
+      marginTop: 28,
+      flexWrap: 'wrap'
+    }
+  }, data.mauze.map(x => /*#__PURE__*/React.createElement("button", {
+    key: x.name,
+    onClick: () => openMauze(x.name),
+    style: {
+      background: x.name === name ? 'var(--ink)' : 'transparent',
+      color: x.name === name ? 'var(--paper)' : 'var(--ink-mute)',
+      border: `1px solid ${x.name === name ? 'var(--ink)' : 'var(--rule)'}`,
+      padding: '8px 14px',
+      fontSize: 12,
+      fontWeight: 500,
+      letterSpacing: '.04em',
+      cursor: 'pointer',
+      fontFamily: 'inherit',
+      borderRadius: 2
+    }
+  }, x.name))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 36,
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: 40,
+      alignItems: 'end'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, null, "Mauze in Focus"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: 18,
+      marginTop: 8,
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement(SerifH, {
+    size: 72
+  }, m.name), m.arabic && /*#__PURE__*/React.createElement(SerifH, {
+    size: 42,
+    style: {
+      color: 'var(--maroon)'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    dir: "rtl"
+  }, m.arabic))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      fontFamily: 'var(--serif)',
+      fontStyle: 'italic',
+      fontSize: 20,
+      color: 'var(--ink-soft)'
+    }
+  }, "Head of Department \xB7 ", m.hod)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'right',
+      fontSize: 13,
+      color: 'var(--ink-mute)'
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      marginBottom: 6
+    }
+  }, "Logic Applied"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 22,
+      color: 'var(--ink)',
+      fontStyle: 'italic'
+    }
+  }, m.logic))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 24
+    }
+  }, /*#__PURE__*/React.createElement(Rule, {
+    heavy: true
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(5, 1fr)',
+      marginTop: 0,
+      borderBottom: '1px solid var(--rule)'
+    }
+  }, /*#__PURE__*/React.createElement(Stat, {
+    label: "Mauze Capacity",
+    value: fmt(m.capacity)
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "CMZ Capacity",
+    value: fmt(m.cmzCapacity),
+    accent: "var(--maroon)",
+    sub: `${pct(m.cmzCapacity, m.capacity)}% of total`
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Total Groups",
+    value: fmt(m.totalGroups)
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Mumineen / Group",
+    value: fmt(m.perGroup)
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '18px 22px',
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      marginBottom: 8
+    }
+  }, "Zones"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 42,
+      lineHeight: 1
+    }
+  }, m.zones.length || '—'), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6,
+      fontSize: 12.5,
+      color: 'var(--ink-mute)'
+    }
+  }, m.subVenues.length, " sub-venues"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: 40,
+      marginTop: 48
+    }
+  }, /*#__PURE__*/React.createElement(ZonesPanel, {
+    mauze: m
+  }), /*#__PURE__*/React.createElement(SubVenuesPanel, {
+    mauze: m
+  })), division && division.venues.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 56
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, null, "Mahirul Makan Division"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 32,
+    italic: true,
+    style: {
+      marginTop: 6
+    }
+  }, "Venue-by-Venue Assignments"), /*#__PURE__*/React.createElement(Rule, {
+    style: {
+      marginTop: 14
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflow: 'auto',
+      marginTop: 18,
+      border: '1px solid var(--rule)',
+      borderRadius: 2
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: 13.5
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: 'var(--paper-2)',
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: th
+  }, "Venue"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      ...th,
+      textAlign: 'right'
+    }
+  }, "Capacity"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      ...th,
+      textAlign: 'right'
+    }
+  }, "Mahir Assigned"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      ...th,
+      textAlign: 'right'
+    }
+  }, "Ratio"))), /*#__PURE__*/React.createElement("tbody", null, division.venues.map((v, i) => /*#__PURE__*/React.createElement("tr", {
+    key: i,
+    style: {
+      borderTop: '1px solid var(--rule-soft)'
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: td
+  }, v.name, v.side && /*#__PURE__*/React.createElement("span", {
+    style: {
+      marginLeft: 8,
+      fontSize: 10,
+      padding: '2px 7px',
+      borderRadius: 8,
+      background: v.side === 'ladies' ? 'rgba(122,31,43,0.1)' : 'rgba(26,37,66,0.07)',
+      color: v.side === 'ladies' ? 'var(--maroon)' : 'var(--ink-soft)',
+      letterSpacing: '.06em',
+      textTransform: 'uppercase',
+      fontWeight: 500,
+      verticalAlign: 'middle'
+    }
+  }, v.side)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      ...td,
+      textAlign: 'right',
+      fontFamily: 'var(--mono)'
+    }
+  }, fmt(v.capacity)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      ...td,
+      textAlign: 'right',
+      fontFamily: 'var(--mono)',
+      color: 'var(--maroon)'
+    }
+  }, v.assigned), /*#__PURE__*/React.createElement("td", {
+    style: {
+      ...td,
+      textAlign: 'right',
+      fontFamily: 'var(--mono)',
+      color: 'var(--ink-mute)'
+    }
+  }, "1 : ", Math.round(v.capacity / v.assigned)))))))), m.prepReport && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 56
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, null, "HOD Preparation Report"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 32,
+    italic: true,
+    style: {
+      marginTop: 6
+    }
+  }, "Status & Next Steps"), /*#__PURE__*/React.createElement(Rule, {
+    style: {
+      marginTop: 14
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 20,
+      padding: '24px 28px',
+      background: 'var(--paper-2)',
+      border: '1px solid var(--rule)',
+      borderRadius: 2,
+      fontFamily: 'var(--serif)',
+      fontSize: 17,
+      lineHeight: 1.65,
+      color: 'var(--ink-soft)',
+      whiteSpace: 'pre-wrap',
+      fontStyle: 'italic',
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      position: 'absolute',
+      top: -2,
+      left: 18,
+      fontSize: 54,
+      color: 'var(--gold)',
+      fontFamily: 'var(--serif)',
+      lineHeight: 1,
+      opacity: .5
+    }
+  }, "\u201C"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      paddingLeft: 30
+    }
+  }, m.prepReport.trim()))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginTop: 60,
+      paddingTop: 24,
+      borderTop: '1px solid var(--rule)'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => openMauze(prev.name),
+    style: navBtn
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      fontSize: 10,
+      marginBottom: 4
+    }
+  }, "Previous"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 22,
+    italic: true
+  }, "\u2190 ", prev.name)), /*#__PURE__*/React.createElement("button", {
+    onClick: () => openMauze(next.name),
+    style: {
+      ...navBtn,
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      fontSize: 10,
+      marginBottom: 4
+    }
+  }, "Next"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 22,
+    italic: true
+  }, next.name, " \u2192"))));
 }
-
-const th = { padding:'14px 16px', fontSize:11, letterSpacing:'.08em', textTransform:'uppercase', color:'var(--ink-mute)', fontWeight:600, borderBottom:'1px solid var(--rule)' };
-const td = { padding:'12px 16px', fontSize:13.5, color:'var(--ink-soft)' };
-const navBtn = { background:'transparent', border:'none', cursor:'pointer', textAlign:'left', fontFamily:'inherit', color:'var(--ink)', padding:0 };
-
-function ZonesPanel({ mauze }) {
+const th = {
+  padding: '14px 16px',
+  fontSize: 11,
+  letterSpacing: '.08em',
+  textTransform: 'uppercase',
+  color: 'var(--ink-mute)',
+  fontWeight: 600,
+  borderBottom: '1px solid var(--rule)'
+};
+const td = {
+  padding: '12px 16px',
+  fontSize: 13.5,
+  color: 'var(--ink-soft)'
+};
+const navBtn = {
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  textAlign: 'left',
+  fontFamily: 'inherit',
+  color: 'var(--ink)',
+  padding: 0
+};
+function ZonesPanel({
+  mauze
+}) {
   const m = mauze;
   const items = m.zones.filter(z => z.capacity > 1); // drop noise
-  const maxCap = Math.max(1, ...items.map(z=>z.capacity));
-  return (
-    <div>
-      <Eyebrow>Zones</Eyebrow>
-      <SerifH size={32} italic style={{marginTop:6}}>Capacity by Zone</SerifH>
-      <Rule style={{marginTop:14}} />
-      {items.length === 0 ? (
-        <div style={{marginTop:18,padding:'16px 18px',background:'var(--paper-2)',border:'1px dashed var(--rule)',color:'var(--ink-mute)',fontFamily:'var(--serif)',fontStyle:'italic',whiteSpace:'pre-wrap'}}>
-          {m.zonesText || 'No zone breakdown recorded.'}
-        </div>
-      ) : (
-        <div style={{marginTop:18,display:'flex',flexDirection:'column',gap:10}}>
-          {items.map((z, i) => (
-            <div key={i} style={{position:'relative',padding:'10px 14px',background:'var(--paper-2)',border:'1px solid var(--rule-soft)',borderRadius:2}}>
-              <div style={{position:'absolute',top:0,left:0,height:'100%',width:`${(z.capacity/maxCap)*100}%`,background:'rgba(26,37,66,0.06)',pointerEvents:'none'}} />
-              <div style={{position:'relative',display:'flex',justifyContent:'space-between',alignItems:'center',gap:10}}>
-                <span style={{fontFamily:'var(--serif)',fontSize:15.5,color:'var(--ink)'}}>{z.name}</span>
-                <span style={{fontFamily:'var(--mono)',fontSize:13,color:'var(--ink-soft)'}}>{fmt(z.capacity)}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  const maxCap = Math.max(1, ...items.map(z => z.capacity));
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, null, "Zones"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 32,
+    italic: true,
+    style: {
+      marginTop: 6
+    }
+  }, "Capacity by Zone"), /*#__PURE__*/React.createElement(Rule, {
+    style: {
+      marginTop: 14
+    }
+  }), items.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 18,
+      padding: '16px 18px',
+      background: 'var(--paper-2)',
+      border: '1px dashed var(--rule)',
+      color: 'var(--ink-mute)',
+      fontFamily: 'var(--serif)',
+      fontStyle: 'italic',
+      whiteSpace: 'pre-wrap'
+    }
+  }, m.zonesText || 'No zone breakdown recorded.') : /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 18,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10
+    }
+  }, items.map((z, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      position: 'relative',
+      padding: '10px 14px',
+      background: 'var(--paper-2)',
+      border: '1px solid var(--rule-soft)',
+      borderRadius: 2
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      height: '100%',
+      width: `${z.capacity / maxCap * 100}%`,
+      background: 'rgba(26,37,66,0.06)',
+      pointerEvents: 'none'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 15.5,
+      color: 'var(--ink)'
+    }
+  }, z.name), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 13,
+      color: 'var(--ink-soft)'
+    }
+  }, fmt(z.capacity)))))));
 }
-
-function SubVenuesPanel({ mauze }) {
+function SubVenuesPanel({
+  mauze
+}) {
   const m = mauze;
   const items = m.subVenues.filter(s => s.capacity > 1);
-  const total = items.reduce((s,v)=>s+v.capacity,0);
-  return (
-    <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline'}}>
-        <div>
-          <Eyebrow>Sub-Venues</Eyebrow>
-          <SerifH size={32} italic style={{marginTop:6}}>CMZ Breakdown</SerifH>
-        </div>
-        <div style={{fontFamily:'var(--mono)',fontSize:12,color:'var(--ink-mute)'}}>
-          {items.length} venues · {fmt(total)}
-        </div>
-      </div>
-      <Rule style={{marginTop:14}} />
-      {items.length === 0 ? (
-        <div style={{marginTop:18,padding:'16px 18px',background:'var(--paper-2)',border:'1px dashed var(--rule)',color:'var(--ink-mute)',fontFamily:'var(--serif)',fontStyle:'italic',whiteSpace:'pre-wrap',fontSize:13}}>
-          {m.subVenuesText || 'No sub-venue breakdown recorded.'}
-        </div>
-      ) : (
-        <div style={{marginTop:18,maxHeight:520,overflow:'auto',border:'1px solid var(--rule-soft)',borderRadius:2}}>
-          <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-            <tbody>
-              {items.map((s, i) => (
-                <tr key={i} style={{borderTop: i===0?'none':'1px solid var(--rule-soft)'}}>
-                  <td style={{padding:'9px 14px',color:'var(--ink-soft)',fontFamily:'var(--serif)',fontSize:14.5}}>{s.name}</td>
-                  <td style={{padding:'9px 14px',textAlign:'right',fontFamily:'var(--mono)',fontSize:12.5,color:'var(--maroon)'}}>{fmt(s.capacity)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
+  const total = items.reduce((s, v) => s + v.capacity, 0);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'baseline'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, null, "Sub-Venues"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 32,
+    italic: true,
+    style: {
+      marginTop: 6
+    }
+  }, "CMZ Breakdown")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 12,
+      color: 'var(--ink-mute)'
+    }
+  }, items.length, " venues \xB7 ", fmt(total))), /*#__PURE__*/React.createElement(Rule, {
+    style: {
+      marginTop: 14
+    }
+  }), items.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 18,
+      padding: '16px 18px',
+      background: 'var(--paper-2)',
+      border: '1px dashed var(--rule)',
+      color: 'var(--ink-mute)',
+      fontFamily: 'var(--serif)',
+      fontStyle: 'italic',
+      whiteSpace: 'pre-wrap',
+      fontSize: 13
+    }
+  }, m.subVenuesText || 'No sub-venue breakdown recorded.') : /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 18,
+      maxHeight: 520,
+      overflow: 'auto',
+      border: '1px solid var(--rule-soft)',
+      borderRadius: 2
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("tbody", null, items.map((s, i) => /*#__PURE__*/React.createElement("tr", {
+    key: i,
+    style: {
+      borderTop: i === 0 ? 'none' : '1px solid var(--rule-soft)'
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '9px 14px',
+      color: 'var(--ink-soft)',
+      fontFamily: 'var(--serif)',
+      fontSize: 14.5
+    }
+  }, s.name), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '9px 14px',
+      textAlign: 'right',
+      fontFamily: 'var(--mono)',
+      fontSize: 12.5,
+      color: 'var(--maroon)'
+    }
+  }, fmt(s.capacity))))))));
 }
 
 // ---------- FEMALE DEPARTMENTS ----------
-function FemaleView({ data }) {
+function FemaleView({
+  data
+}) {
   const [sortBy, setSortBy] = useState('total');
   const [sortDir, setSortDir] = useState('desc');
-
   const cities = data.female.cities;
   const depts = data.female.departments.map(d => ({
     ...d,
-    total: cities.reduce((s,c)=>s + (d.values[c]||0), 0),
+    total: cities.reduce((s, c) => s + (d.values[c] || 0), 0)
   }));
-  const sorted = [...depts].sort((a,b) => {
-    const av = sortBy === 'total' ? a.total : sortBy === 'name' ? a.name : (a.values[sortBy]||0);
-    const bv = sortBy === 'total' ? b.total : sortBy === 'name' ? b.name : (b.values[sortBy]||0);
-    if (typeof av === 'string') return sortDir==='asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-    return sortDir==='asc' ? av - bv : bv - av;
+  const sorted = [...depts].sort((a, b) => {
+    const av = sortBy === 'total' ? a.total : sortBy === 'name' ? a.name : a.values[sortBy] || 0;
+    const bv = sortBy === 'total' ? b.total : sortBy === 'name' ? b.name : b.values[sortBy] || 0;
+    if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return sortDir === 'asc' ? av - bv : bv - av;
   });
   // max cell value for heat
-  const maxCell = Math.max(...depts.flatMap(d => cities.map(c => d.values[c]||0)));
-  const heat = (v) => {
+  const maxCell = Math.max(...depts.flatMap(d => cities.map(c => d.values[c] || 0)));
+  const heat = v => {
     if (!v) return 'transparent';
     const t = Math.pow(v / maxCell, 0.55);
-    return `rgba(122, 31, 43, ${0.06 + t*0.5})`;
+    return `rgba(122, 31, 43, ${0.06 + t * 0.5})`;
   };
-
   function clickSort(key) {
-    if (sortBy === key) setSortDir(d => d==='asc'?'desc':'asc');
-    else { setSortBy(key); setSortDir('desc'); }
+    if (sortBy === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');else {
+      setSortBy(key);
+      setSortDir('desc');
+    }
   }
-
-  return (
-    <div>
-      <div style={{marginTop:28}}>
-        <Eyebrow>Section</Eyebrow>
-        <SerifH size={44} italic style={{marginTop:6}}>Female Department Headcounts</SerifH>
-        <div style={{fontSize:13,color:'var(--ink-mute)',fontFamily:'var(--serif)',fontStyle:'italic',marginTop:6,maxWidth:760}}>
-          31 departments across nine Mauze. Click any column header to sort. Cell shade reflects relative headcount.
-        </div>
-      </div>
-      <Rule style={{marginTop:18}} />
-
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',marginTop:24,border:'1px solid var(--rule)',borderRadius:2,overflow:'hidden'}}>
-        {cities.map(c => (
-          <div key={c} style={{padding:'14px 16px',borderRight:'1px solid var(--rule)',background:'var(--paper-2)'}}>
-            <Eyebrow style={{fontSize:10}}>{c.trim()}</Eyebrow>
-            <div style={{fontFamily:'var(--serif)',fontSize:24,marginTop:4,fontVariantNumeric:'tabular-nums'}}>{fmt(data.female.totals[c])}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{marginTop:24,overflow:'auto',border:'1px solid var(--rule)',borderRadius:2}}>
-        <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-          <thead>
-            <tr style={{background:'var(--paper-2)'}}>
-              <th style={{...th,textAlign:'left',cursor:'pointer',position:'sticky',left:0,background:'var(--paper-2)',zIndex:2,minWidth:220}} onClick={()=>clickSort('name')}>Department {sortBy==='name' && (sortDir==='asc'?'↑':'↓')}</th>
-              {cities.map(c => (
-                <th key={c} style={{...th,textAlign:'right',cursor:'pointer'}} onClick={()=>clickSort(c)}>
-                  {c.trim()} {sortBy===c && (sortDir==='asc'?'↑':'↓')}
-                </th>
-              ))}
-              <th style={{...th,textAlign:'right',cursor:'pointer',color:'var(--maroon)'}} onClick={()=>clickSort('total')}>Total {sortBy==='total' && (sortDir==='asc'?'↑':'↓')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((d, i) => (
-              <tr key={i} style={{borderTop:'1px solid var(--rule-soft)'}}>
-                <td style={{...td,position:'sticky',left:0,background:'var(--paper)',fontFamily:'var(--serif)',fontSize:15,color:'var(--ink)',zIndex:1}}>{d.name}</td>
-                {cities.map(c => (
-                  <td key={c} style={{padding:'8px 14px',textAlign:'right',fontFamily:'var(--mono)',fontSize:12.5,background:heat(d.values[c]||0),color: (d.values[c]||0)>0?'var(--ink)':'var(--ink-mute)'}}>
-                    {d.values[c] ? fmt(d.values[c]) : '—'}
-                  </td>
-                ))}
-                <td style={{padding:'8px 14px',textAlign:'right',fontFamily:'var(--mono)',fontSize:13,fontWeight:500,color:'var(--maroon)',background:'var(--paper-2)'}}>
-                  {fmt(d.total)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 28
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, null, "Section"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 44,
+    italic: true,
+    style: {
+      marginTop: 6
+    }
+  }, "Female Department Headcounts"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: 'var(--ink-mute)',
+      fontFamily: 'var(--serif)',
+      fontStyle: 'italic',
+      marginTop: 6,
+      maxWidth: 760
+    }
+  }, "31 departments across nine Mauze. Click any column header to sort. Cell shade reflects relative headcount.")), /*#__PURE__*/React.createElement(Rule, {
+    style: {
+      marginTop: 18
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))',
+      marginTop: 24,
+      border: '1px solid var(--rule)',
+      borderRadius: 2,
+      overflow: 'hidden'
+    }
+  }, cities.map(c => /*#__PURE__*/React.createElement("div", {
+    key: c,
+    style: {
+      padding: '14px 16px',
+      borderRight: '1px solid var(--rule)',
+      background: 'var(--paper-2)'
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    style: {
+      fontSize: 10
+    }
+  }, c.trim()), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 24,
+      marginTop: 4,
+      fontVariantNumeric: 'tabular-nums'
+    }
+  }, fmt(data.female.totals[c]))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 24,
+      overflow: 'auto',
+      border: '1px solid var(--rule)',
+      borderRadius: 2
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: 'var(--paper-2)'
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: {
+      ...th,
+      textAlign: 'left',
+      cursor: 'pointer',
+      position: 'sticky',
+      left: 0,
+      background: 'var(--paper-2)',
+      zIndex: 2,
+      minWidth: 220
+    },
+    onClick: () => clickSort('name')
+  }, "Department ", sortBy === 'name' && (sortDir === 'asc' ? '↑' : '↓')), cities.map(c => /*#__PURE__*/React.createElement("th", {
+    key: c,
+    style: {
+      ...th,
+      textAlign: 'right',
+      cursor: 'pointer'
+    },
+    onClick: () => clickSort(c)
+  }, c.trim(), " ", sortBy === c && (sortDir === 'asc' ? '↑' : '↓'))), /*#__PURE__*/React.createElement("th", {
+    style: {
+      ...th,
+      textAlign: 'right',
+      cursor: 'pointer',
+      color: 'var(--maroon)'
+    },
+    onClick: () => clickSort('total')
+  }, "Total ", sortBy === 'total' && (sortDir === 'asc' ? '↑' : '↓')))), /*#__PURE__*/React.createElement("tbody", null, sorted.map((d, i) => /*#__PURE__*/React.createElement("tr", {
+    key: i,
+    style: {
+      borderTop: '1px solid var(--rule-soft)'
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      ...td,
+      position: 'sticky',
+      left: 0,
+      background: 'var(--paper)',
+      fontFamily: 'var(--serif)',
+      fontSize: 15,
+      color: 'var(--ink)',
+      zIndex: 1
+    }
+  }, d.name), cities.map(c => /*#__PURE__*/React.createElement("td", {
+    key: c,
+    style: {
+      padding: '8px 14px',
+      textAlign: 'right',
+      fontFamily: 'var(--mono)',
+      fontSize: 12.5,
+      background: heat(d.values[c] || 0),
+      color: (d.values[c] || 0) > 0 ? 'var(--ink)' : 'var(--ink-mute)'
+    }
+  }, d.values[c] ? fmt(d.values[c]) : '—')), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '8px 14px',
+      textAlign: 'right',
+      fontFamily: 'var(--mono)',
+      fontSize: 13,
+      fontWeight: 500,
+      color: 'var(--maroon)',
+      background: 'var(--paper-2)'
+    }
+  }, fmt(d.total))))))));
 }
 
 // ---------- MAHIRUL MAKAN ----------
-function MahirView({ data }) {
+function MahirView({
+  data
+}) {
   const [q, setQ] = useState('');
   const [side, setSide] = useState('all'); // all | talabat | talebaat
 
   const term = q.trim().toLowerCase();
-  const filterFn = (p) => !term || p.name.toLowerCase().includes(term) || (p.its && p.its.includes(term)) || (p.phone && p.phone.includes(term));
+  const filterFn = p => !term || p.name.toLowerCase().includes(term) || p.its && p.its.includes(term) || p.phone && p.phone.includes(term);
   const showTalabat = side === 'all' || side === 'talabat';
   const showTalebaat = side === 'all' || side === 'talebaat';
   const tList = showTalabat ? data.mahirulMakan.talabat.filter(filterFn) : [];
   const lList = showTalebaat ? data.mahirulMakan.talebaat.filter(filterFn) : [];
-
-  return (
-    <div>
-      <div style={{marginTop:28,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:24,flexWrap:'wrap'}}>
-        <div>
-          <Eyebrow>Section</Eyebrow>
-          <SerifH size={44} italic style={{marginTop:6}}>Mahirul Makan Directory</SerifH>
-          <div style={{fontSize:13,color:'var(--ink-mute)',fontFamily:'var(--serif)',fontStyle:'italic',marginTop:6,maxWidth:600}}>
-            {data.mahirulMakan.talabat.length} Talabat (gents) · {data.mahirulMakan.talebaat.length} Talebaat (ladies) named to date.
-          </div>
-        </div>
-        <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          {['all','talabat','talebaat'].map(opt => (
-            <button key={opt} onClick={()=>setSide(opt)} style={{
-              padding:'8px 16px', fontSize:12, letterSpacing:'.04em', fontWeight:500,
-              fontFamily:'inherit', cursor:'pointer', borderRadius:2,
-              background: side===opt ? 'var(--ink)' : 'transparent',
-              color: side===opt ? 'var(--paper)' : 'var(--ink-mute)',
-              border:`1px solid ${side===opt?'var(--ink)':'var(--rule)'}`,
-              textTransform:'capitalize'
-            }}>{opt}</button>
-          ))}
-          <input
-            value={q}
-            onChange={e=>setQ(e.target.value)}
-            placeholder="Search name, ITS, phone…"
-            style={{
-              padding:'9px 14px',fontSize:13,fontFamily:'inherit',
-              border:'1px solid var(--rule)',background:'var(--paper)',color:'var(--ink)',
-              minWidth:240,borderRadius:2,outline:'none'
-            }}
-            onFocus={e=>e.currentTarget.style.borderColor='var(--ink-soft)'}
-            onBlur={e=>e.currentTarget.style.borderColor='var(--rule)'}
-          />
-        </div>
-      </div>
-      <Rule style={{marginTop:18}} />
-
-      <div style={{display:'grid',gridTemplateColumns: side==='all' ? '1fr 1fr' : '1fr', gap:32, marginTop:28}}>
-        {showTalabat && <PersonTable title="Talabat" subtitle="Gents division" people={tList} accent="var(--ink)" />}
-        {showTalebaat && <PersonTable title="Talebaat" subtitle="Ladies division" people={lList} accent="var(--maroon)" />}
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 28,
+      display: 'flex',
+      alignItems: 'flex-end',
+      justifyContent: 'space-between',
+      gap: 24,
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, null, "Section"), /*#__PURE__*/React.createElement(SerifH, {
+    size: 44,
+    italic: true,
+    style: {
+      marginTop: 6
+    }
+  }, "Mahirul Makan Directory"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: 'var(--ink-mute)',
+      fontFamily: 'var(--serif)',
+      fontStyle: 'italic',
+      marginTop: 6,
+      maxWidth: 600
+    }
+  }, data.mahirulMakan.talabat.length, " Talabat (gents) \xB7 ", data.mahirulMakan.talebaat.length, " Talebaat (ladies) named to date.")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 8,
+      alignItems: 'center'
+    }
+  }, ['all', 'talabat', 'talebaat'].map(opt => /*#__PURE__*/React.createElement("button", {
+    key: opt,
+    onClick: () => setSide(opt),
+    style: {
+      padding: '8px 16px',
+      fontSize: 12,
+      letterSpacing: '.04em',
+      fontWeight: 500,
+      fontFamily: 'inherit',
+      cursor: 'pointer',
+      borderRadius: 2,
+      background: side === opt ? 'var(--ink)' : 'transparent',
+      color: side === opt ? 'var(--paper)' : 'var(--ink-mute)',
+      border: `1px solid ${side === opt ? 'var(--ink)' : 'var(--rule)'}`,
+      textTransform: 'capitalize'
+    }
+  }, opt)), /*#__PURE__*/React.createElement("input", {
+    value: q,
+    onChange: e => setQ(e.target.value),
+    placeholder: "Search name, ITS, phone\u2026",
+    style: {
+      padding: '9px 14px',
+      fontSize: 13,
+      fontFamily: 'inherit',
+      border: '1px solid var(--rule)',
+      background: 'var(--paper)',
+      color: 'var(--ink)',
+      minWidth: 240,
+      borderRadius: 2,
+      outline: 'none'
+    },
+    onFocus: e => e.currentTarget.style.borderColor = 'var(--ink-soft)',
+    onBlur: e => e.currentTarget.style.borderColor = 'var(--rule)'
+  }))), /*#__PURE__*/React.createElement(Rule, {
+    style: {
+      marginTop: 18
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: side === 'all' ? '1fr 1fr' : '1fr',
+      gap: 32,
+      marginTop: 28
+    }
+  }, showTalabat && /*#__PURE__*/React.createElement(PersonTable, {
+    title: "Talabat",
+    subtitle: "Gents division",
+    people: tList,
+    accent: "var(--ink)"
+  }), showTalebaat && /*#__PURE__*/React.createElement(PersonTable, {
+    title: "Talebaat",
+    subtitle: "Ladies division",
+    people: lList,
+    accent: "var(--maroon)"
+  })));
 }
-
-function PersonTable({ title, subtitle, people, accent }) {
-  return (
-    <div>
-      <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between'}}>
-        <div>
-          <SerifH size={28} style={{color:accent}}>{title}</SerifH>
-          <div style={{fontSize:11,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--ink-mute)',marginTop:2,fontWeight:500}}>{subtitle}</div>
-        </div>
-        <div style={{fontFamily:'var(--mono)',fontSize:12,color:'var(--ink-mute)'}}>{people.length} {people.length===1?'person':'people'}</div>
-      </div>
-      <div style={{marginTop:14,border:'1px solid var(--rule)',borderRadius:2,overflow:'hidden'}}>
-        {people.length === 0 && (
-          <div style={{padding:'40px 20px',textAlign:'center',color:'var(--ink-mute)',fontFamily:'var(--serif)',fontStyle:'italic'}}>No matching records</div>
-        )}
-        {people.map((p, i) => (
-          <div key={i} style={{display:'grid',gridTemplateColumns:'40px 1fr auto',gap:12,padding:'12px 16px',alignItems:'center',borderTop: i===0?'none':'1px solid var(--rule-soft)',background: i%2 ? 'var(--paper)' : 'var(--paper-2)'}}>
-            <div style={{fontFamily:'var(--mono)',fontSize:11,color:'var(--ink-mute)'}}>{String(i+1).padStart(2,'0')}</div>
-            <div>
-              <div style={{fontFamily:'var(--serif)',fontSize:17,color:'var(--ink)',lineHeight:1.2}}>{p.name}</div>
-              {p.phone && <div style={{fontFamily:'var(--mono)',fontSize:11,color:'var(--ink-mute)',marginTop:3}}>📞 {p.phone}</div>}
-            </div>
-            <div style={{fontFamily:'var(--mono)',fontSize:12,color:'var(--ink-soft)',background:'var(--paper-3)',padding:'4px 10px',borderRadius:2,letterSpacing:'.04em'}}>ITS {p.its}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+function PersonTable({
+  title,
+  subtitle,
+  people,
+  accent
+}) {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'baseline',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(SerifH, {
+    size: 28,
+    style: {
+      color: accent
+    }
+  }, title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      letterSpacing: '.16em',
+      textTransform: 'uppercase',
+      color: 'var(--ink-mute)',
+      marginTop: 2,
+      fontWeight: 500
+    }
+  }, subtitle)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 12,
+      color: 'var(--ink-mute)'
+    }
+  }, people.length, " ", people.length === 1 ? 'person' : 'people')), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      border: '1px solid var(--rule)',
+      borderRadius: 2,
+      overflow: 'hidden'
+    }
+  }, people.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '40px 20px',
+      textAlign: 'center',
+      color: 'var(--ink-mute)',
+      fontFamily: 'var(--serif)',
+      fontStyle: 'italic'
+    }
+  }, "No matching records"), people.map((p, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '40px 1fr auto',
+      gap: 12,
+      padding: '12px 16px',
+      alignItems: 'center',
+      borderTop: i === 0 ? 'none' : '1px solid var(--rule-soft)',
+      background: i % 2 ? 'var(--paper)' : 'var(--paper-2)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 11,
+      color: 'var(--ink-mute)'
+    }
+  }, String(i + 1).padStart(2, '0')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--serif)',
+      fontSize: 17,
+      color: 'var(--ink)',
+      lineHeight: 1.2
+    }
+  }, p.name), p.phone && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 11,
+      color: 'var(--ink-mute)',
+      marginTop: 3
+    }
+  }, "\uD83D\uDCDE ", p.phone)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'var(--mono)',
+      fontSize: 12,
+      color: 'var(--ink-soft)',
+      background: 'var(--paper-3)',
+      padding: '4px 10px',
+      borderRadius: 2,
+      letterSpacing: '.04em'
+    }
+  }, "ITS ", p.its)))));
 }
-
-Object.assign(window, {
-  Header, OverviewView, MauzeDetail, FemaleView, MahirView,
-  Rule, Eyebrow, SerifH, fmt
-});
-
-</script>
-<script type="text/babel" data-presets="react">
-/* global React, ReactDOM, HIZB_DATA, Header, OverviewView, MauzeDetail, FemaleView, MahirView, TweaksPanel, useTweaks, TweakSection, TweakRadio, TweakColor */
-const { useState, useEffect } = React;
-
 const APP_TWEAKS = /*EDITMODE-BEGIN*/{
   "palette": "warm",
   "density": "comfortable",
   "showArabic": true
-}/*EDITMODE-END*/;
-
+} /*EDITMODE-END*/;
 function applyPalette(p) {
   const root = document.documentElement;
   const palettes = {
     warm: {
-      '--ink': '#1a2542', '--ink-soft': '#34405e', '--ink-mute': '#6b7290',
-      '--paper': '#f5f1e8', '--paper-2': '#ece6d6', '--paper-3': '#e2dac5',
-      '--rule': '#d8cfb5', '--rule-soft': '#e6dfca',
-      '--maroon': '#7a1f2b', '--maroon-soft': '#a4434f', '--gold': '#a98637',
+      '--ink': '#1a2542',
+      '--ink-soft': '#34405e',
+      '--ink-mute': '#6b7290',
+      '--paper': '#f5f1e8',
+      '--paper-2': '#ece6d6',
+      '--paper-3': '#e2dac5',
+      '--rule': '#d8cfb5',
+      '--rule-soft': '#e6dfca',
+      '--maroon': '#7a1f2b',
+      '--maroon-soft': '#a4434f',
+      '--gold': '#a98637'
     },
     ivory: {
-      '--ink': '#1c1c1c', '--ink-soft': '#3a3a3a', '--ink-mute': '#7a7a7a',
-      '--paper': '#fbf9f4', '--paper-2': '#f3eee2', '--paper-3': '#e9e2cf',
-      '--rule': '#d9d2bd', '--rule-soft': '#e5dec9',
-      '--maroon': '#6b2027', '--maroon-soft': '#8e3b41', '--gold': '#a98637',
+      '--ink': '#1c1c1c',
+      '--ink-soft': '#3a3a3a',
+      '--ink-mute': '#7a7a7a',
+      '--paper': '#fbf9f4',
+      '--paper-2': '#f3eee2',
+      '--paper-3': '#e9e2cf',
+      '--rule': '#d9d2bd',
+      '--rule-soft': '#e5dec9',
+      '--maroon': '#6b2027',
+      '--maroon-soft': '#8e3b41',
+      '--gold': '#a98637'
     },
     slate: {
-      '--ink': '#0f1729', '--ink-soft': '#2a334a', '--ink-mute': '#647088',
-      '--paper': '#eef0f3', '--paper-2': '#e2e6ec', '--paper-3': '#d4d9e1',
-      '--rule': '#c5ccd7', '--rule-soft': '#dde2ea',
-      '--maroon': '#7a1f2b', '--maroon-soft': '#a4434f', '--gold': '#8d6d2c',
-    },
+      '--ink': '#0f1729',
+      '--ink-soft': '#2a334a',
+      '--ink-mute': '#647088',
+      '--paper': '#eef0f3',
+      '--paper-2': '#e2e6ec',
+      '--paper-3': '#d4d9e1',
+      '--rule': '#c5ccd7',
+      '--rule-soft': '#dde2ea',
+      '--maroon': '#7a1f2b',
+      '--maroon-soft': '#a4434f',
+      '--gold': '#8d6d2c'
+    }
   };
   const set = palettes[p] || palettes.warm;
-  Object.entries(set).forEach(([k,v]) => root.style.setProperty(k, v));
+  Object.entries(set).forEach(([k, v]) => root.style.setProperty(k, v));
 }
-
 function applyDensity(d) {
   const root = document.documentElement;
-  if (d === 'compact')      root.style.setProperty('font-size','14px');
-  else if (d === 'spacious') root.style.setProperty('font-size','16px');
-  else root.style.setProperty('font-size','15px');
+  if (d === 'compact') root.style.setProperty('font-size', '14px');else if (d === 'spacious') root.style.setProperty('font-size', '16px');else root.style.setProperty('font-size', '15px');
 }
-
 function App() {
   const [t, setTweak] = useTweaks(APP_TWEAKS);
   const data = window.HIZB_DATA;
@@ -4223,21 +5226,27 @@ function App() {
     window.addEventListener('hashchange', fn);
     return () => window.removeEventListener('hashchange', fn);
   }, []);
-
   function parseHash() {
     const h = window.location.hash.replace(/^#\/?/, '') || 'overview';
     const parts = h.split('/');
-    return { tab: parts[0] || 'overview', arg: parts[1] ? decodeURIComponent(parts[1]) : null };
+    return {
+      tab: parts[0] || 'overview',
+      arg: parts[1] ? decodeURIComponent(parts[1]) : null
+    };
   }
   function go(tab, arg) {
     window.location.hash = '#/' + tab + (arg ? '/' + encodeURIComponent(arg) : '');
   }
-  const openMauze = (name) => go('mauze', name);
-  const setTab = (tab) => go(tab);
+  const openMauze = name => go('mauze', name);
+  const setTab = tab => go(tab);
 
   // Apply tweaks
-  useEffect(() => { applyPalette(t.palette); }, [t.palette]);
-  useEffect(() => { applyDensity(t.density); }, [t.density]);
+  useEffect(() => {
+    applyPalette(t.palette);
+  }, [t.palette]);
+  useEffect(() => {
+    applyDensity(t.density);
+  }, [t.density]);
   useEffect(() => {
     if (!t.showArabic) {
       document.body.classList.add('no-arabic');
@@ -4245,85 +5254,115 @@ function App() {
       document.body.classList.remove('no-arabic');
     }
   }, [t.showArabic]);
-
-  const total = data.mauze.reduce((s,m)=>s+m.totalGroups,0);
-
+  const total = data.mauze.reduce((s, m) => s + m.totalGroups, 0);
   let body;
   if (route.tab === 'mauze') {
     const name = route.arg || data.mauze[0].name;
-    body = <MauzeDetail name={name} data={data} setTab={setTab} openMauze={openMauze} />;
+    body = /*#__PURE__*/React.createElement(MauzeDetail, {
+      name: name,
+      data: data,
+      setTab: setTab,
+      openMauze: openMauze
+    });
   } else if (route.tab === 'female') {
-    body = <FemaleView data={data} />;
+    body = /*#__PURE__*/React.createElement(FemaleView, {
+      data: data
+    });
   } else if (route.tab === 'mahir') {
-    body = <MahirView data={data} />;
+    body = /*#__PURE__*/React.createElement(MahirView, {
+      data: data
+    });
   } else {
-    body = <OverviewView data={data} openMauze={openMauze} />;
+    body = /*#__PURE__*/React.createElement(OverviewView, {
+      data: data,
+      openMauze: openMauze
+    });
   }
-
-  return (
-    <div style={{minHeight:'100vh'}}>
-      <Header tab={route.tab} setTab={setTab} total={total} />
-      <main style={{maxWidth:1400,margin:'0 auto',padding:'28px 40px 80px'}}>
-        {body}
-      </main>
-      <Footer />
-
-      <TweaksPanel title="Tweaks" defaultPos="bottom-right">
-        <TweakSection title="Palette">
-          <TweakRadio
-            value={t.palette}
-            onChange={v=>setTweak('palette',v)}
-            options={[
-              { value:'warm',  label:'Warm' },
-              { value:'ivory', label:'Ivory' },
-              { value:'slate', label:'Slate' },
-            ]}
-          />
-        </TweakSection>
-        <TweakSection title="Density">
-          <TweakRadio
-            value={t.density}
-            onChange={v=>setTweak('density',v)}
-            options={[
-              { value:'compact',     label:'Compact' },
-              { value:'comfortable', label:'Regular' },
-              { value:'spacious',    label:'Spacious' },
-            ]}
-          />
-        </TweakSection>
-        <TweakSection title="Arabic labels">
-          <TweakRadio
-            value={t.showArabic ? 'on' : 'off'}
-            onChange={v=>setTweak('showArabic', v==='on')}
-            options={[{value:'on',label:'Show'},{value:'off',label:'Hide'}]}
-          />
-        </TweakSection>
-      </TweaksPanel>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: '100vh'
+    }
+  }, /*#__PURE__*/React.createElement(Header, {
+    tab: route.tab,
+    setTab: setTab,
+    total: total
+  }), /*#__PURE__*/React.createElement("main", {
+    style: {
+      maxWidth: 1400,
+      margin: '0 auto',
+      padding: '28px 40px 80px'
+    }
+  }, body), /*#__PURE__*/React.createElement(Footer, null), /*#__PURE__*/React.createElement(TweaksPanel, {
+    title: "Tweaks",
+    defaultPos: "bottom-right"
+  }, /*#__PURE__*/React.createElement(TweakSection, {
+    title: "Palette"
+  }, /*#__PURE__*/React.createElement(TweakRadio, {
+    value: t.palette,
+    onChange: v => setTweak('palette', v),
+    options: [{
+      value: 'warm',
+      label: 'Warm'
+    }, {
+      value: 'ivory',
+      label: 'Ivory'
+    }, {
+      value: 'slate',
+      label: 'Slate'
+    }]
+  })), /*#__PURE__*/React.createElement(TweakSection, {
+    title: "Density"
+  }, /*#__PURE__*/React.createElement(TweakRadio, {
+    value: t.density,
+    onChange: v => setTweak('density', v),
+    options: [{
+      value: 'compact',
+      label: 'Compact'
+    }, {
+      value: 'comfortable',
+      label: 'Regular'
+    }, {
+      value: 'spacious',
+      label: 'Spacious'
+    }]
+  })), /*#__PURE__*/React.createElement(TweakSection, {
+    title: "Arabic labels"
+  }, /*#__PURE__*/React.createElement(TweakRadio, {
+    value: t.showArabic ? 'on' : 'off',
+    onChange: v => setTweak('showArabic', v === 'on'),
+    options: [{
+      value: 'on',
+      label: 'Show'
+    }, {
+      value: 'off',
+      label: 'Hide'
+    }]
+  }))));
 }
-
 function Footer() {
-  return (
-    <footer style={{
-      maxWidth:1400, margin:'40px auto 0', padding:'24px 40px 60px',
-      borderTop:'1px solid var(--rule)', color:'var(--ink-mute)',
-      fontFamily:'var(--serif)', fontStyle:'italic', fontSize:14,
-      display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:16
-    }}>
-      <span>Hizb-e-Saify · 1448 AH · Operations Brief</span>
-      <span>Source: Hizbe Saify Data 1448.xlsx — 14 sheets consolidated</span>
-    </footer>
-  );
+  return /*#__PURE__*/React.createElement("footer", {
+    style: {
+      maxWidth: 1400,
+      margin: '40px auto 0',
+      padding: '24px 40px 60px',
+      borderTop: '1px solid var(--rule)',
+      color: 'var(--ink-mute)',
+      fontFamily: 'var(--serif)',
+      fontStyle: 'italic',
+      fontSize: 14,
+      display: 'flex',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: 16
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "Hizb-e-Saify \xB7 1448 AH \xB7 Operations Brief"), /*#__PURE__*/React.createElement("span", null, "Source: Hizbe Saify Data 1448.xlsx \u2014 14 sheets consolidated"));
 }
 
 // Style hook for hiding arabic when toggled off
 const sty = document.createElement('style');
 sty.textContent = `body.no-arabic [dir="rtl"] { display: none !important; }`;
 document.head.appendChild(sty);
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-
+ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));
 </script>
 </body>
 </html>
